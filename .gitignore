@@ -29,6 +29,12 @@ yarn-error.*
 .DS_Store
 *.pem
 
+# IDE
+.idea/
+
+# Android build
+android/
+
 # local env files
 .env*.local
 
