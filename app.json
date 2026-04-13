@@ -1,32 +1,42 @@
 {
   "expo": {
-    "name": "crypto-forecasts",
+    "name": "Crypto Forecasts",
     "slug": "crypto-forecasts",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0D1117"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.solana.mobile.expo.template"
+      "bundleIdentifier": "com.cryptoforecasts.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#0D1117"
       },
-      "package": "com.solana.mobile.expo.template"
+      "package": "com.cryptoforecasts.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#58A6FF"
+        }
+      ]
+    ]
   }
 }

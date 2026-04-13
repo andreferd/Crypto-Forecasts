@@ -1,82 +1,44 @@
 // Polyfills
-import "./src/polyfills";
+import './src/polyfills';
 
-import { StyleSheet, useColorScheme } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
+import { Colors } from './src/constants/colors';
+import { WalletProvider } from './src/hooks/useWallet';
+import { AppNavigator } from './src/navigation/AppNavigator';
 
-import { ConnectionProvider } from "./src/utils/ConnectionProvider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-  DarkTheme as NavigationDarkTheme,
-  DefaultTheme as NavigationDefaultTheme,
-} from "@react-navigation/native";
-import {
-  PaperProvider,
-  MD3DarkTheme,
-  MD3LightTheme,
-  adaptNavigationTheme,
-} from "react-native-paper";
-import { AppNavigator } from "./src/navigators/AppNavigator";
-import { ClusterProvider } from "./src/components/cluster/cluster-data-access";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      retry: 2,
+    },
+  },
+});
 
-const queryClient = new QueryClient();
+const darkTheme = {
+  ...MD3DarkTheme,
+  colors: {
+    ...MD3DarkTheme.colors,
+    background: Colors.background,
+    surface: Colors.surface,
+    primary: Colors.accent,
+    onSurface: Colors.text,
+    onSurfaceVariant: Colors.textSecondary,
+  },
+};
 
 export default function App() {
-  const colorScheme = useColorScheme();
-  const { LightTheme, DarkTheme } = adaptNavigationTheme({
-    reactNavigationLight: NavigationDefaultTheme,
-    reactNavigationDark: NavigationDarkTheme,
-  });
-
-  const CombinedDefaultTheme = {
-    ...MD3LightTheme,
-    ...LightTheme,
-    colors: {
-      ...MD3LightTheme.colors,
-      ...LightTheme.colors,
-    },
-  };
-  const CombinedDarkTheme = {
-    ...MD3DarkTheme,
-    ...DarkTheme,
-    colors: {
-      ...MD3DarkTheme.colors,
-      ...DarkTheme.colors,
-    },
-  };
   return (
     <QueryClientProvider client={queryClient}>
-      <ClusterProvider>
-        <ConnectionProvider config={{ commitment: "processed" }}>
-          <SafeAreaView
-            style={[
-              styles.shell,
-              {
-                backgroundColor:
-                  colorScheme === "dark"
-                    ? MD3DarkTheme.colors.background
-                    : MD3LightTheme.colors.background,
-              },
-            ]}
-          >
-            <PaperProvider
-              theme={
-                colorScheme === "dark"
-                  ? CombinedDarkTheme
-                  : CombinedDefaultTheme
-              }
-            >
-              <AppNavigator />
-            </PaperProvider>
-          </SafeAreaView>
-        </ConnectionProvider>
-      </ClusterProvider>
+      <PaperProvider theme={darkTheme}>
+        <SafeAreaProvider>
+          <WalletProvider>
+            <AppNavigator />
+          </WalletProvider>
+        </SafeAreaProvider>
+      </PaperProvider>
     </QueryClientProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  shell: {
-    flex: 1,
-  },
-});
