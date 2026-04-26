@@ -18,7 +18,18 @@ const KEYS = {
   accuracyLog: `${PREFIX}accuracy-log`,
   userPredictions: `${PREFIX}user-predictions`,
   driftNotified: `${PREFIX}drift-notified`,
+  onboarding: `${PREFIX}onboarding-choice`,
 } as const;
+
+export type OnboardingChoice = 'newbie' | 'advanced';
+
+export async function getOnboardingChoice(): Promise<OnboardingChoice | null> {
+  return getJSON<OnboardingChoice>(KEYS.onboarding);
+}
+
+export async function saveOnboardingChoice(choice: OnboardingChoice): Promise<void> {
+  await setJSON(KEYS.onboarding, choice);
+}
 
 // ─── Helpers ──────────────────────────────────────────────
 

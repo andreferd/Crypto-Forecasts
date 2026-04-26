@@ -49,9 +49,10 @@ export function EducationalTooltip() {
         <View style={styles.copy}>
           <Text style={styles.title}>How to read this app</Text>
           <Text style={styles.body}>
-            Each row shows a crypto's <Text style={styles.em}>most likely price range</Text> by
-            year-end, with the market's <Text style={styles.em}>probability</Text> and{' '}
-            <Text style={styles.em}>confidence</Text>. Tap a row for the full distribution.
+            Each card shows a crypto's <Text style={styles.em}>probability distribution</Text>{' '}
+            for end-of-year. The dashed line is the current spot price. Higher curves
+            mean more market <Text style={styles.em}>belief</Text> on that range. Tap
+            a card to drill in or place a call.
           </Text>
         </View>
         <TouchableOpacity onPress={dismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>

@@ -12,6 +12,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { WalletProvider } from './src/hooks/useWallet';
+import { OnboardingProvider } from './src/hooks/useOnboarding';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { paperTheme } from './src/theme';
 
@@ -39,9 +40,11 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <PaperProvider theme={paperTheme}>
         <SafeAreaProvider>
-          <WalletProvider>
-            <AppNavigator />
-          </WalletProvider>
+          <OnboardingProvider>
+            <WalletProvider>
+              <AppNavigator />
+            </WalletProvider>
+          </OnboardingProvider>
         </SafeAreaProvider>
       </PaperProvider>
     </QueryClientProvider>

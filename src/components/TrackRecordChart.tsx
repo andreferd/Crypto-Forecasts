@@ -128,9 +128,18 @@ export function TrackRecordChart({ symbol, days = 30 }: Props) {
           </View>
         ))}
 
-        <View style={[styles.xLabels, { left: PAD.left, right: PAD.right }]}>
-          <Text style={styles.axisText}>{formatDate(computed.minT)}</Text>
-          <Text style={styles.axisText}>{formatDate(computed.maxT)}</Text>
+        <View
+          style={[
+            styles.xLabels,
+            { paddingLeft: PAD.left, paddingRight: PAD.right },
+          ]}
+        >
+          <Text style={[styles.axisText, { textAlign: 'left' }]}>
+            {formatDate(computed.minT)}
+          </Text>
+          <Text style={[styles.axisText, { textAlign: 'right' }]}>
+            {formatDate(computed.maxT)}
+          </Text>
         </View>
       </View>
 

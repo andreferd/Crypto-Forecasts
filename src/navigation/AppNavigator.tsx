@@ -11,9 +11,11 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { CryptoDetailScreen } from '../screens/CryptoDetailScreen';
 import { AccuracyTrackerScreen } from '../screens/AccuracyTrackerScreen';
 import { PredictionGameScreen } from '../screens/PredictionGameScreen';
+import { OnboardingScreen } from '../screens/OnboardingScreen';
 import { useAlertMonitor } from '../hooks/useAlertMonitor';
 import { useAccuracyLogger } from '../hooks/useAccuracyLogger';
 import { usePredictionDriftMonitor } from '../hooks/usePredictionDriftMonitor';
+import { useOnboarding } from '../hooks/useOnboarding';
 import { requestNotificationPermissions } from '../services/notificationService';
 
 const Stack = createNativeStackNavigator<MarketsStackParamList>();
@@ -135,6 +137,8 @@ function MainTabs() {
 }
 
 export function AppNavigator() {
+  const { loaded, choice } = useOnboarding();
+
   return (
     <NavigationContainer
       theme={{
@@ -149,7 +153,7 @@ export function AppNavigator() {
         },
       }}
     >
-      <MainTabs />
+      {!loaded ? null : choice == null ? <OnboardingScreen /> : <MainTabs />}
     </NavigationContainer>
   );
 }
