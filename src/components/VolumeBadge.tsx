@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, radii, typography, fontFamily } from '../theme';
 
 interface VolumeBadgeProps {
   volume: number;
@@ -25,14 +25,16 @@ export function VolumeBadge({ volume }: VolumeBadgeProps) {
 
 const styles = StyleSheet.create({
   badge: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 4,
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
   text: {
+    ...typography.caption,
+    fontFamily: fontFamily.medium,
     fontSize: 9,
-    color: Colors.textMuted,
-    fontWeight: '500',
+    lineHeight: 12,
+    color: colors.text3,
   },
 });

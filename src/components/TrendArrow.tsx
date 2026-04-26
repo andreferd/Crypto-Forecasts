@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, typography } from '../theme';
 
 interface TrendArrowProps {
   direction: 'up' | 'down' | 'flat';
@@ -12,10 +12,10 @@ export function TrendArrow({ direction, changePercent }: TrendArrowProps) {
   const arrow = direction === 'up' ? '▲' : direction === 'down' ? '▼' : '▬';
   const color =
     direction === 'up'
-      ? Colors.success
+      ? colors.up
       : direction === 'down'
-        ? Colors.error
-        : Colors.textMuted;
+        ? colors.down
+        : colors.text3;
 
   return (
     <View style={styles.container}>
@@ -32,7 +32,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
+    ...typography.captionStrong,
     fontSize: 11,
-    fontWeight: '600',
+    ...typography.numeric,
   },
 });

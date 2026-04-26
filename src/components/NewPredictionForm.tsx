@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { useForecast } from '../hooks/useForecast';
 import { computeMarketProbForTarget } from '../utils/predictionScoring';
+import { ProbabilityChart } from './ProbabilityChart';
+import { PriceBracket } from '../types/market';
 
 interface Props {
   onSubmit: (symbol: string, targetPrice: number, direction: 'above' | 'below') => void;
@@ -13,34 +15,57 @@ interface Props {
 
 const SYMBOLS = ['BTC', 'ETH', 'SOL'];
 
+function bracketMidpoint(b: PriceBracket): number {
+  if (b.floorStrike != null && b.capStrike != null) {
+    return (b.floorStrike + b.capStrike) / 2;
+  }
+  if (b.floorStrike != null) return b.floorStrike * 1.1;
+  if (b.capStrike != null) return b.capStrike * 0.9;
+  return 0;
+}
+
+function formatPrice(v: number): string {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+  return `$${Math.round(v).toLocaleString()}`;
+}
+
 export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
   const [symbol, setSymbol] = useState(initialSymbol ?? 'BTC');
-  const [priceText, setPriceText] = useState('');
+  const [selected, setSelected] = useState<PriceBracket | null>(null);
   const [direction, setDirection] = useState<'above' | 'below'>('above');
 
   const forecast = useForecast(symbol);
   const eoy = forecast.forecasts.find((f) => f.type === 'eoy');
   const brackets = eoy?.brackets ?? [];
 
-  const targetPrice = parseFloat(priceText.replace(/[,$]/g, ''));
-  const isValidPrice = !isNaN(targetPrice) && targetPrice > 0;
+  // Reset selection when symbol changes
+  React.useEffect(() => {
+    setSelected(null);
+  }, [symbol]);
+
+  const target = selected ? bracketMidpoint(selected) : null;
 
   const liveProb = useMemo(() => {
-    if (!isValidPrice || brackets.length === 0) return null;
-    return computeMarketProbForTarget(brackets, targetPrice, direction);
-  }, [brackets, targetPrice, direction, isValidPrice]);
+    if (target == null || brackets.length === 0) return null;
+    return computeMarketProbForTarget(brackets, target, direction);
+  }, [brackets, target, direction]);
 
   const handleSubmit = () => {
-    if (!isValidPrice) return;
-    onSubmit(symbol, targetPrice, direction);
-    setPriceText('');
+    if (target == null) return;
+    onSubmit(symbol, target, direction);
+    setSelected(null);
   };
+
+  const brandColor = TOKENS[symbol]?.color ?? colors.accent;
 
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>New Prediction</Text>
+      <Text style={styles.title}>Make a call</Text>
+      <Text style={styles.subtitle}>
+        Tap a price range below — that's your bet for end of year.
+      </Text>
 
-      {/* Symbol picker */}
       <View style={styles.symbolRow}>
         {SYMBOLS.map((s) => {
           const token = TOKENS[s];
@@ -50,14 +75,18 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
               key={s}
               style={[
                 styles.symbolPill,
-                active && { backgroundColor: (token?.color ?? Colors.accent) + '22', borderColor: token?.color ?? Colors.accent },
+                active && {
+                  backgroundColor: (token?.color ?? colors.accent) + '22',
+                  borderColor: token?.color ?? colors.accent,
+                },
               ]}
               onPress={() => setSymbol(s)}
+              activeOpacity={0.8}
             >
               <Text
                 style={[
                   styles.symbolPillText,
-                  active && { color: token?.color ?? Colors.accent },
+                  active && { color: token?.color ?? colors.accent },
                 ]}
               >
                 {token?.icon ?? ''} {s}
@@ -67,174 +96,214 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
         })}
       </View>
 
-      {/* Price input */}
-      <View style={styles.inputRow}>
-        <Text style={styles.inputLabel}>{symbol} price target:</Text>
-        <TextInput
-          style={styles.textInput}
-          value={priceText}
-          onChangeText={setPriceText}
-          placeholder="e.g. 100000"
-          placeholderTextColor={Colors.textMuted}
-          keyboardType="numeric"
-        />
+      <View style={styles.chartWrap}>
+        {brackets.length === 0 ? (
+          <Text style={styles.empty}>Loading {symbol} brackets…</Text>
+        ) : (
+          <ProbabilityChart
+            brackets={brackets}
+            accentColor={brandColor}
+            onSelectBracket={setSelected}
+            selectedTicker={selected?.ticker}
+          />
+        )}
       </View>
 
-      {/* Direction toggle */}
-      <View style={styles.directionRow}>
-        <TouchableOpacity
-          style={[styles.directionBtn, direction === 'above' && styles.directionBtnActive]}
-          onPress={() => setDirection('above')}
-        >
-          <Text style={[styles.directionText, direction === 'above' && styles.directionTextActive]}>
-            Above
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.directionBtn, direction === 'below' && styles.directionBtnActive]}
-          onPress={() => setDirection('below')}
-        >
-          <Text style={[styles.directionText, direction === 'below' && styles.directionTextActive]}>
-            Below
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {selected ? (
+        <View style={styles.selectionPanel}>
+          <View style={styles.selectionLine}>
+            <Text style={styles.selectionLabel}>Your call</Text>
+            <Text style={styles.selectionValue}>
+              {symbol} {direction} {formatPrice(target ?? 0)}
+            </Text>
+          </View>
 
-      {/* Live probability */}
-      {liveProb != null && (
-        <View style={styles.liveProbRow}>
-          <Text style={styles.liveProbLabel}>Market gives this a</Text>
-          <Text
-            style={[
-              styles.liveProbValue,
-              { color: liveProb >= 50 ? Colors.success : liveProb >= 25 ? Colors.warning : Colors.error },
-            ]}
-          >
-            {liveProb}% chance
-          </Text>
+          <View style={styles.directionRow}>
+            <DirectionBtn label="Above" active={direction === 'above'} onPress={() => setDirection('above')} />
+            <DirectionBtn label="Below" active={direction === 'below'} onPress={() => setDirection('below')} />
+          </View>
+
+          {liveProb != null && (
+            <View style={styles.liveProbRow}>
+              <Text style={styles.liveProbLabel}>Market gives this</Text>
+              <Text
+                style={[
+                  styles.liveProbValue,
+                  {
+                    color:
+                      liveProb >= 50 ? colors.up : liveProb >= 25 ? colors.warning : colors.down,
+                  },
+                ]}
+              >
+                {liveProb}%
+              </Text>
+            </View>
+          )}
+
+          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.85}>
+            <Text style={styles.submitText}>Lock in</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.tip}>
+          <Text style={styles.tipText}>👆 Tap any bar to set your call</Text>
         </View>
       )}
-
-      {/* Submit */}
-      <TouchableOpacity
-        style={[styles.submitBtn, !isValidPrice && styles.submitBtnDisabled]}
-        onPress={handleSubmit}
-        disabled={!isValidPrice}
-      >
-        <Text style={styles.submitText}>Make Prediction</Text>
-      </TouchableOpacity>
     </View>
+  );
+}
+
+function DirectionBtn({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.directionBtn, active && styles.directionBtnActive]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      <Text style={[styles.directionText, active && styles.directionTextActive]}>{label}</Text>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 14,
+    ...typography.title,
+    fontSize: 18,
+    color: colors.text1,
+  },
+  subtitle: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.text2,
+    marginTop: 2,
+    marginBottom: spacing.md,
   },
   symbolRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   symbolPill: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: Colors.surfaceLight,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     alignItems: 'center',
   },
   symbolPillText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textMuted,
+    ...typography.bodyStrong,
+    color: colors.text3,
   },
-  inputRow: {
-    marginBottom: 14,
+  chartWrap: {
+    marginBottom: spacing.md,
   },
-  inputLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginBottom: 6,
+  empty: {
+    ...typography.body,
+    color: colors.text3,
+    textAlign: 'center',
+    paddingVertical: spacing.lg,
   },
-  textInput: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
-    color: Colors.text,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  selectionPanel: {
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  selectionLine: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectionLabel: {
+    ...typography.captionStrong,
+    color: colors.text2,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  selectionValue: {
+    ...typography.bodyStrong,
+    ...typography.numeric,
+    color: colors.text1,
+    textTransform: 'capitalize',
   },
   directionRow: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 14,
+    gap: spacing.sm,
   },
   directionBtn: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: Colors.surfaceLight,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
     alignItems: 'center',
   },
   directionBtnActive: {
-    backgroundColor: Colors.accent + '22',
-    borderColor: Colors.accent,
+    backgroundColor: colors.accent + '22',
+    borderColor: colors.accent,
   },
   directionText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textMuted,
+    ...typography.bodyStrong,
+    color: colors.text3,
   },
   directionTextActive: {
-    color: Colors.accent,
+    color: colors.accent,
   },
   liveProbRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginBottom: 14,
-    paddingVertical: 8,
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 8,
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
   },
   liveProbLabel: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
   },
   liveProbValue: {
-    fontSize: 15,
-    fontWeight: '700',
+    ...typography.title,
+    fontSize: 18,
+    ...typography.numeric,
   },
   submitBtn: {
-    backgroundColor: Colors.accent,
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md,
+    borderRadius: radii.md,
     alignItems: 'center',
-  },
-  submitBtnDisabled: {
-    opacity: 0.5,
+    marginTop: spacing.xs,
   },
   submitText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    color: colors.onAccent,
+  },
+  tip: {
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+  },
+  tipText: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.text3,
+    fontStyle: 'italic',
   },
 });

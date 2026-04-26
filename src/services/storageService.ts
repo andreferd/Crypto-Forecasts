@@ -17,6 +17,7 @@ const KEYS = {
   alertSettings: `${PREFIX}alert-settings`,
   accuracyLog: `${PREFIX}accuracy-log`,
   userPredictions: `${PREFIX}user-predictions`,
+  driftNotified: `${PREFIX}drift-notified`,
 } as const;
 
 // ─── Helpers ──────────────────────────────────────────────
@@ -97,4 +98,18 @@ export async function removeUserPrediction(id: string): Promise<void> {
   const predictions = await getUserPredictions();
   const filtered = predictions.filter((p) => p.id !== id);
   await setJSON(KEYS.userPredictions, { predictions: filtered });
+}
+
+// ─── Drift Notifications ──────────────────────────────────
+// Tracks the last notified drift magnitude per predictionId so we don't spam.
+
+export type DriftNotifiedMap = Record<string, number>;
+
+export async function getDriftNotified(): Promise<DriftNotifiedMap> {
+  const map = await getJSON<DriftNotifiedMap>(KEYS.driftNotified);
+  return map ?? {};
+}
+
+export async function saveDriftNotified(map: DriftNotifiedMap): Promise<void> {
+  await setJSON(KEYS.driftNotified, map);
 }

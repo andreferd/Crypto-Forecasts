@@ -88,3 +88,30 @@ export async function updateBaselines(
   baselines.timestamp = Date.now();
   await saveAlertBaselines(baselines);
 }
+
+export interface DriftNotice {
+  symbol: string;
+  direction: 'above' | 'below';
+  targetPrice: number;
+  oldProb: number;
+  newProb: number;
+}
+
+export async function notifyPredictionDrift(notice: DriftNotice): Promise<void> {
+  const delta = notice.newProb - notice.oldProb;
+  const arrow = delta > 0 ? '\u2191' : '\u2193';
+  const dirLabel = notice.direction === 'above' ? 'above' : 'below';
+  const target =
+    notice.targetPrice >= 1000
+      ? `$${(notice.targetPrice / 1000).toFixed(notice.targetPrice >= 10_000 ? 0 : 1)}k`
+      : `$${Math.round(notice.targetPrice)}`;
+  const body = `${notice.symbol} ${dirLabel} ${target}: ${notice.oldProb}% \u2192 ${notice.newProb}% ${arrow}`;
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Your call drifted',
+      body,
+      data: { symbol: notice.symbol },
+    },
+    trigger: null,
+  });
+}

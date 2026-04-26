@@ -1,34 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 
 const STORAGE_KEY = '@crypto_forecasts_edu_seen';
 
 export function EducationalTooltip() {
   const [visible, setVisible] = useState(false);
-  const [opacity] = useState(new Animated.Value(0));
+  const height = useRef(new Animated.Value(0)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY).then((val) => {
       if (!val) {
         setVisible(true);
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 400,
-          useNativeDriver: true,
-        }).start();
+        Animated.parallel([
+          Animated.timing(height, { toValue: 1, duration: 300, useNativeDriver: false }),
+          Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: false }),
+        ]).start();
       }
     });
-  }, [opacity]);
+  }, [height, opacity]);
 
   const dismiss = () => {
-    Animated.timing(opacity, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(height, { toValue: 0, duration: 220, useNativeDriver: false }),
+      Animated.timing(opacity, { toValue: 0, duration: 220, useNativeDriver: false }),
+    ]).start(() => {
       setVisible(false);
       AsyncStorage.setItem(STORAGE_KEY, '1');
     });
@@ -37,17 +36,26 @@ export function EducationalTooltip() {
   if (!visible) return null;
 
   return (
-    <Animated.View style={[styles.overlay, { opacity }]}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Welcome to Crypto Forecasts!</Text>
-        <Text style={styles.body}>
-          This app shows probability distributions from Kalshi prediction markets.
-          Each bar represents the market's estimated probability that a crypto asset
-          will end within that price range. Tap any bar to see details, or scrub
-          the chart to explore historical trends.
-        </Text>
-        <TouchableOpacity style={styles.button} onPress={dismiss} activeOpacity={0.8}>
-          <Text style={styles.buttonText}>Got it!</Text>
+    <Animated.View
+      style={[
+        styles.banner,
+        { opacity, maxHeight: height.interpolate({ inputRange: [0, 1], outputRange: [0, 260] }) },
+      ]}
+    >
+      <View style={styles.inner}>
+        <View style={styles.iconWrap}>
+          <Icon source="lightbulb-on-outline" size={18} color={colors.accent} />
+        </View>
+        <View style={styles.copy}>
+          <Text style={styles.title}>How to read this app</Text>
+          <Text style={styles.body}>
+            Each row shows a crypto's <Text style={styles.em}>most likely price range</Text> by
+            year-end, with the market's <Text style={styles.em}>probability</Text> and{' '}
+            <Text style={styles.em}>confidence</Text>. Tap a row for the full distribution.
+          </Text>
+        </View>
+        <TouchableOpacity onPress={dismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Icon source="close" size={18} color={colors.text3} />
         </TouchableOpacity>
       </View>
     </Animated.View>
@@ -55,44 +63,44 @@ export function EducationalTooltip() {
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  banner: {
+    overflow: 'hidden',
+    marginBottom: spacing.md,
+  },
+  inner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.accent + '44',
+    padding: spacing.md,
+  },
+  iconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.pill,
+    backgroundColor: colors.accent + '1A',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
-    zIndex: 100,
   },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    maxWidth: 340,
+  copy: {
+    flex: 1,
+    gap: 2,
   },
   title: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 12,
-    textAlign: 'center',
+    ...typography.bodyStrong,
+    color: colors.text1,
   },
   body: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    lineHeight: 21,
-    marginBottom: 20,
+    ...typography.body,
+    fontSize: 13,
+    color: colors.text2,
+    lineHeight: 19,
   },
-  button: {
-    backgroundColor: Colors.accentDim,
-    borderRadius: 8,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.accent,
+  em: {
+    color: colors.text1,
+    fontFamily: typography.bodyStrong.fontFamily,
   },
 });

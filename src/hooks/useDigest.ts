@@ -31,20 +31,25 @@ export function useDigest() {
   const isLoading = !snapshotLoaded || btc.isLoading || eth.isLoading || sol.isLoading;
   const hasData = btc.forecasts.length > 0 || eth.forecasts.length > 0 || sol.forecasts.length > 0;
 
+  // Auto-initialize baseline silently the first time we have forecast data
+  // and no prior snapshot. Avoids any "welcome to digest" UX.
+  useEffect(() => {
+    if (!snapshotLoaded || oldSnapshot != null || !hasData) return;
+    const initial = buildCurrentSnapshot(currentData);
+    saveDigestSnapshot(initial).then(() => setOldSnapshot(initial));
+  }, [snapshotLoaded, oldSnapshot, hasData, currentData]);
+
   const digests = useMemo<SymbolDigest[]>(() => {
     if (!hasData) return [];
     return computeFullDigest(oldSnapshot, currentData);
   }, [oldSnapshot, currentData, hasData]);
 
-  const snapshotAge = oldSnapshot
-    ? Date.now() - oldSnapshot.timestamp
-    : null;
+  const snapshotAge = oldSnapshot ? Date.now() - oldSnapshot.timestamp : null;
 
-  const hasSignificantChanges = useMemo(() => {
-    return digests.some((d) =>
-      d.bracketDiffs.some((diff) => Math.abs(diff.delta) >= 3),
-    );
-  }, [digests]);
+  const hasSignificantChanges = useMemo(
+    () => digests.some((d) => d.bracketDiffs.some((diff) => Math.abs(diff.delta) >= 3)),
+    [digests],
+  );
 
   const markDigestSeen = useCallback(async () => {
     if (!hasData) return;
@@ -58,7 +63,7 @@ export function useDigest() {
     isLoading,
     hasData,
     snapshotAge,
-    isFirstVisit: snapshotLoaded && oldSnapshot === null,
+    isFirstVisit: false, // legacy; auto-init means we never expose this state to UI
     hasSignificantChanges,
     markDigestSeen,
   };

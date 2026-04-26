@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
+import { directionColor } from '../theme/semantics';
 
 interface SpotPriceComparisonProps {
   spotPrice: number | null;
@@ -27,7 +28,7 @@ export function SpotPriceComparison({
   const delta = spotPrice - expectedValue;
   const deltaPercent = (delta / expectedValue) * 100;
   const isAbove = delta > 0;
-  const deltaColor = isAbove ? Colors.success : Colors.error;
+  const deltaColor = directionColor(delta);
 
   return (
     <View style={styles.container}>
@@ -42,15 +43,11 @@ export function SpotPriceComparison({
           <Text style={[styles.deltaText, { color: deltaColor }]}>
             {isAbove ? '+' : ''}{deltaPercent.toFixed(1)}%
           </Text>
-          <Text style={styles.deltaLabel}>
-            vs forecast
-          </Text>
+          <Text style={styles.deltaLabel}>vs forecast</Text>
         </View>
         <View style={[styles.priceBlock, styles.rightAlign]}>
           <Text style={styles.label}>EOY Forecast</Text>
-          <Text style={styles.forecastPrice}>
-            {formatPrice(expectedValue)}
-          </Text>
+          <Text style={styles.forecastPrice}>{formatPrice(expectedValue)}</Text>
         </View>
       </View>
     </View>
@@ -59,11 +56,11 @@ export function SpotPriceComparison({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   row: {
     flexDirection: 'row',
@@ -77,32 +74,37 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   label: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.text2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   price: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...typography.display,
+    ...typography.numeric,
+    fontSize: 22,
   },
   forecastPrice: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.display,
+    ...typography.numeric,
+    fontSize: 22,
+    color: colors.text1,
   },
   deltaBlock: {
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: spacing.md,
   },
   deltaText: {
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    ...typography.numeric,
   },
   deltaLabel: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: colors.text3,
     marginTop: 2,
   },
 });

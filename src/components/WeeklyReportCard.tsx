@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { WeeklyReportCard as WeeklyReportCardType } from '../types/storage';
 
@@ -42,7 +42,7 @@ export function WeeklyReportCardComponent({ report }: Props) {
         <Icon
           source={expanded ? 'chevron-up' : 'chevron-down'}
           size={20}
-          color={Colors.textMuted}
+          color={colors.text3}
         />
       </TouchableOpacity>
 
@@ -54,10 +54,7 @@ export function WeeklyReportCardComponent({ report }: Props) {
               <View key={sb.symbol} style={styles.breakdownRow}>
                 <View style={styles.breakdownLeft}>
                   <View
-                    style={[
-                      styles.dot,
-                      { backgroundColor: token?.color ?? Colors.accent },
-                    ]}
+                    style={[styles.dot, { backgroundColor: token?.color ?? colors.accent }]}
                   />
                   <Text style={styles.breakdownSymbol}>{sb.symbol}</Text>
                 </View>
@@ -75,39 +72,39 @@ export function WeeklyReportCardComponent({ report }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: Colors.border,
-    marginBottom: 8,
+    borderColor: colors.border,
+    marginBottom: spacing.sm,
     overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 14,
+    padding: spacing.md,
   },
   headerLeft: {
     flex: 1,
   },
   dateRange: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.bodyStrong,
+    color: colors.text1,
   },
   avgError: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
     marginTop: 2,
   },
   breakdown: {
-    paddingHorizontal: 14,
-    paddingBottom: 14,
-    gap: 8,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+    gap: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
-    paddingTop: 10,
+    borderTopColor: colors.border,
+    paddingTop: spacing.sm + 2,
   },
   breakdownRow: {
     flexDirection: 'row',
@@ -117,7 +114,7 @@ const styles = StyleSheet.create({
   breakdownLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   dot: {
     width: 8,
@@ -125,12 +122,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   breakdownSymbol: {
+    ...typography.bodyStrong,
     fontSize: 13,
-    fontWeight: '600',
-    color: Colors.text,
+    color: colors.text1,
   },
   breakdownValue: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
   },
 });

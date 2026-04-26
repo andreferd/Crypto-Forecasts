@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 
 export type TimePeriod = '1W' | '1M' | '3M' | 'ALL';
 
@@ -46,23 +46,22 @@ export function TimePeriodSelector({ selected, onSelect }: TimePeriodSelectorPro
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
+    gap: spacing.sm,
   },
   pill: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: Colors.surfaceLight,
+    paddingHorizontal: spacing.md + 2,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface2,
   },
   pillActive: {
-    backgroundColor: Colors.accentDim,
+    backgroundColor: colors.accent + '22',
   },
   label: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textSecondary,
+    ...typography.captionStrong,
+    color: colors.text2,
   },
   labelActive: {
-    color: Colors.accent,
+    color: colors.accent,
   },
 });

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { PriceBracket } from '../types/market';
 import { VolumeBadge } from './VolumeBadge';
 import { computeProbabilityBands } from '../utils/marketAnalytics';
@@ -9,6 +9,10 @@ import { computeProbabilityBands } from '../utils/marketAnalytics';
 interface ProbabilityChartProps {
   brackets: PriceBracket[];
   accentColor?: string;
+  /** When set, tapping a bar invokes this callback instead of expanding details. */
+  onSelectBracket?: (bracket: PriceBracket) => void;
+  /** ticker of the bracket currently selected (highlight). Only used with onSelectBracket. */
+  selectedTicker?: string;
 }
 
 function ExpandableBar({
@@ -16,16 +20,24 @@ function ExpandableBar({
   maxProb,
   accentColor,
   isInRange50,
+  onSelect,
+  selected,
 }: {
   bracket: PriceBracket;
   maxProb: number;
   accentColor: string;
   isInRange50: boolean;
+  onSelect?: () => void;
+  selected?: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const heightAnim = useRef(new Animated.Value(18)).current;
 
   const toggle = () => {
+    if (onSelect) {
+      onSelect();
+      return;
+    }
     const toExpanded = !expanded;
     setExpanded(toExpanded);
     Animated.spring(heightAnim, {
@@ -39,7 +51,11 @@ function ExpandableBar({
 
   return (
     <TouchableOpacity
-      style={[styles.barRow, isInRange50 && styles.barRowHighlight]}
+      style={[
+        styles.barRow,
+        isInRange50 && styles.barRowHighlight,
+        selected && styles.barRowSelected,
+      ]}
       onPress={toggle}
       activeOpacity={0.8}
     >
@@ -60,7 +76,7 @@ function ExpandableBar({
             ]}
           />
         </Animated.View>
-        {expanded && (
+        {expanded && !onSelect && (
           <View style={styles.expandedInfo}>
             <VolumeBadge volume={bracket.volume} />
             <Text style={styles.oiText}>
@@ -74,7 +90,14 @@ function ExpandableBar({
   );
 }
 
-export function ProbabilityChart({ brackets, accentColor = Colors.chartBar }: ProbabilityChartProps) {
+export function ProbabilityChart({
+  brackets,
+  accentColor = colors.accent,
+  onSelectBracket,
+  selectedTicker,
+}: ProbabilityChartProps) {
+  const bands = useMemo(() => computeProbabilityBands(brackets), [brackets]);
+
   if (brackets.length === 0) {
     return (
       <View style={styles.empty}>
@@ -84,9 +107,6 @@ export function ProbabilityChart({ brackets, accentColor = Colors.chartBar }: Pr
   }
 
   const maxProb = Math.max(...brackets.map((b) => b.probability));
-
-  // Compute 50% range for highlighting
-  const bands = useMemo(() => computeProbabilityBands(brackets), [brackets]);
   const range50 = bands.range50;
 
   const isInRange50 = (bracket: PriceBracket): boolean => {
@@ -98,10 +118,9 @@ export function ProbabilityChart({ brackets, accentColor = Colors.chartBar }: Pr
 
   return (
     <View style={styles.container}>
-      {/* Range band legend */}
       {range50 && (
         <View style={styles.bandLegend}>
-          <View style={[styles.bandDot, { backgroundColor: Colors.rangeBand50 }]} />
+          <View style={[styles.bandDot, { backgroundColor: colors.rangeBand50 }]} />
           <Text style={styles.bandText}>50% probability range</Text>
         </View>
       )}
@@ -112,6 +131,8 @@ export function ProbabilityChart({ brackets, accentColor = Colors.chartBar }: Pr
           maxProb={maxProb}
           accentColor={accentColor}
           isInRange50={isInRange50(bracket)}
+          onSelect={onSelectBracket ? () => onSelectBracket(bracket) : undefined}
+          selected={selectedTicker === bracket.ticker}
         />
       ))}
     </View>
@@ -120,76 +141,85 @@ export function ProbabilityChart({ brackets, accentColor = Colors.chartBar }: Pr
 
 const styles = StyleSheet.create({
   container: {
-    gap: 6,
+    gap: spacing.xs + 2,
   },
   bandLegend: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    gap: spacing.xs + 2,
+    marginBottom: spacing.xs,
   },
   bandDot: {
     width: 12,
     height: 12,
-    borderRadius: 2,
+    borderRadius: radii.sm,
   },
   bandText: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: colors.text3,
   },
   barRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: 8,
+    gap: spacing.sm,
     paddingVertical: 2,
-    paddingHorizontal: 4,
-    borderRadius: 4,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radii.sm,
   },
   barRowHighlight: {
-    backgroundColor: Colors.rangeBand50,
+    backgroundColor: colors.rangeBand50,
+  },
+  barRowSelected: {
+    backgroundColor: colors.accent + '22',
+    borderWidth: 1,
+    borderColor: colors.accent,
   },
   rangeLabel: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.text2,
     width: 80,
     textAlign: 'right',
     marginTop: 2,
   },
   barContainer: {
     flex: 1,
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 4,
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
     overflow: 'hidden',
   },
   bar: {
-    borderRadius: 4,
+    borderRadius: radii.sm,
     minWidth: 2,
   },
   expandedInfo: {
     flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs + 2,
+    paddingVertical: spacing.xs,
     alignItems: 'center',
   },
   oiText: {
     fontSize: 9,
-    color: Colors.textMuted,
+    lineHeight: 12,
+    fontFamily: typography.caption.fontFamily,
+    color: colors.text3,
   },
   probLabel: {
+    ...typography.captionStrong,
     fontSize: 11,
-    color: Colors.text,
+    color: colors.text1,
     width: 36,
     textAlign: 'right',
-    fontWeight: '600',
     marginTop: 2,
   },
   empty: {
-    padding: 20,
+    padding: spacing.xl,
     alignItems: 'center',
   },
   emptyText: {
-    color: Colors.textMuted,
-    fontSize: 13,
+    ...typography.body,
+    color: colors.text3,
   },
 });

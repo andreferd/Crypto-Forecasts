@@ -1,70 +1,36 @@
 import React from 'react';
-import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native-paper';
-import { Colors } from '../constants/colors';
-import { useAccuracyData } from '../hooks/useAccuracyData';
-import { AccuracySymbolCard } from '../components/AccuracySymbolCard';
-import { WeeklyReportCardComponent } from '../components/WeeklyReportCard';
+import { ScrollView, View, StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors, spacing, typography } from '../theme';
+import { TrackRecordChart } from '../components/TrackRecordChart';
+
+const SYMBOLS = ['BTC', 'ETH', 'SOL'];
 
 export function AccuracyTrackerScreen() {
-  const { metrics, weeklyReports, hasData, loading, refresh } = useAccuracyData();
-
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={Colors.accent} />
-      </View>
-    );
-  }
-
-  if (!hasData) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <Text style={styles.emptyTitle}>Accuracy Tracker</Text>
-        <Text style={styles.emptyText}>
-          This screen tracks how well Kalshi forecast expected values compare to
-          actual spot prices over time. Data will be recorded automatically each
-          day you open the app.
-        </Text>
-        <Text style={styles.emptyHint}>Check back tomorrow for your first data point.</Text>
-      </View>
-    );
-  }
+  const insets = useSafeAreaInsets();
 
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={refresh}
-          tintColor={Colors.accent}
-        />
-      }
+      contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
     >
-      <Text style={styles.title}>Accuracy Tracker</Text>
-      <Text style={styles.subtitle}>
-        How well do prediction markets forecast actual prices?
-      </Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Track record</Text>
+        <Text style={styles.subtitle}>
+          Year-end forecast vs. actual spot price over the past 30 days. Closer
+          lines = sharper market.
+        </Text>
+      </View>
 
-      {/* Per-symbol cards */}
-      {metrics.map((m) => (
-        <AccuracySymbolCard key={m.symbol} metrics={m} />
+      {SYMBOLS.map((s) => (
+        <TrackRecordChart key={s} symbol={s} days={30} />
       ))}
 
-      {/* Weekly reports */}
-      {weeklyReports.length > 0 && (
-        <View style={styles.weeklySection}>
-          <Text style={styles.sectionTitle}>Weekly Reports</Text>
-          {weeklyReports.map((report) => (
-            <WeeklyReportCardComponent
-              key={report.weekStart}
-              report={report}
-            />
-          ))}
-        </View>
-      )}
+      <Text style={styles.legend}>
+        Forecast: market consensus expected value (Kalshi). Spot: actual price
+        history (CoinGecko).
+      </Text>
     </ScrollView>
   );
 }
@@ -72,54 +38,34 @@ export function AccuracyTrackerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: spacing.lg,
   },
-  center: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
+  header: {
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xs,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.hero,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.text1,
   },
   subtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    marginTop: 4,
-    marginBottom: 16,
+    ...typography.body,
+    color: colors.text2,
+    marginTop: spacing.xs,
+    lineHeight: 19,
   },
-  emptyTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 12,
-  },
-  emptyText: {
-    fontSize: 15,
-    color: Colors.textSecondary,
+  legend: {
+    ...typography.caption,
+    color: colors.text3,
+    fontStyle: 'italic',
     textAlign: 'center',
-    lineHeight: 22,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  emptyHint: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    textAlign: 'center',
-  },
-  weeklySection: {
-    marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 12,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    lineHeight: 14,
   },
 });

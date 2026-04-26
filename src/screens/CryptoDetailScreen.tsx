@@ -2,13 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { RootTabParamList } from '../types/navigation';
-import { CRYPTO_TICKERS } from '../constants/kalshi';
-import { getCatalystsForSymbol } from '../constants/catalysts';
+import { CRYPTO_TICKERS, ForecastType } from '../constants/kalshi';
 import { RootStackParamList } from '../types/navigation';
 import { ProbabilityChart } from '../components/ProbabilityChart';
 import { ForecastLineChart } from '../components/ForecastLineChart';
@@ -22,12 +20,20 @@ import { ConfidenceMeter } from '../components/ConfidenceMeter';
 import { ScenarioExplorer } from '../components/ScenarioExplorer';
 import { TrendArrow } from '../components/TrendArrow';
 import { SourceAttribution } from '../components/SourceAttribution';
+import { SegmentedControl, SegmentOption } from '../components/SegmentedControl';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useForecast } from '../hooks/useForecast';
 import { useForecastHistory } from '../hooks/useForecastHistory';
 import { useSpotPrices } from '../hooks/useSpotPrices';
 import { computeTrend } from '../utils/marketAnalytics';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'CryptoDetail'>;
+
+const SERIES_LABELS: Record<ForecastType, { short: string; long: string }> = {
+  eoy: { short: 'EOY', long: 'End of year' },
+  max: { short: 'High', long: 'Yearly high' },
+  min: { short: 'Low', long: 'Yearly low' },
+};
 
 function formatExpectedValue(value: number | null): string {
   if (value == null) return '—';
@@ -38,32 +44,39 @@ function formatExpectedValue(value: number | null): string {
 }
 
 export function CryptoDetailScreen({ route, navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const { symbol } = route.params;
   const token = TOKENS[symbol];
   const { forecasts, isLoading, isError } = useForecast(symbol);
   const { data: spotPrices } = useSpotPrices();
   const spotPrice = spotPrices?.[symbol as keyof typeof spotPrices] ?? null;
 
-  // Time period for chart
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('1M');
   const daysBack = periodToDays(timePeriod);
 
-  // Forecast history
   const tickers = CRYPTO_TICKERS[symbol] ?? [];
   const eoyTicker = tickers.find((t) => t.type === 'eoy')?.seriesTicker;
   const { data: forecastHistory, dataUpdatedAt } = useForecastHistory(eoyTicker, daysBack);
 
-  // Catalysts for this symbol
-  const catalysts = useMemo(() => getCatalystsForSymbol(symbol), [symbol]);
-
-  // Trend calculation
   const trend = useMemo(
     () => (forecastHistory ? computeTrend(forecastHistory) : null),
     [forecastHistory],
   );
 
-  // EOY series for summary/confidence/scenario
   const eoySeries = forecasts.find((f) => f.type === 'eoy');
+
+  // Segmented control: only show types the symbol actually has
+  const segmentOptions: SegmentOption<ForecastType>[] = useMemo(
+    () =>
+      forecasts.map((s) => ({
+        value: s.type,
+        label: SERIES_LABELS[s.type].short,
+        sublabel: formatExpectedValue(s.expectedValue),
+      })),
+    [forecasts],
+  );
+  const [selectedType, setSelectedType] = useState<ForecastType>('eoy');
+  const selectedSeries = forecasts.find((f) => f.type === selectedType) ?? eoySeries;
 
   if (isLoading) {
     return (
@@ -84,10 +97,12 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Header with icon + name + share */}
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[styles.content, { paddingBottom: 80 + insets.bottom }]}
+    >
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? Colors.accent }]}>
+        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? colors.accent }]}>
           <Text style={styles.icon}>{token?.icon ?? '?'}</Text>
         </View>
         <View style={styles.headerInfo}>
@@ -102,30 +117,28 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
         />
       </View>
 
-      {/* Data freshness */}
       {dataUpdatedAt > 0 && (
         <View style={styles.freshnessRow}>
           <DataFreshnessIndicator dataUpdatedAt={dataUpdatedAt} />
         </View>
       )}
 
-      {/* Spot price comparison */}
       {eoySeries && (
         <View style={styles.sectionGap}>
           <SpotPriceComparison
             spotPrice={spotPrice}
             expectedValue={eoySeries.expectedValue}
-            accentColor={token?.color ?? Colors.accent}
+            accentColor={token?.color ?? colors.accent}
           />
         </View>
       )}
 
-      {/* Forecast line chart with time period selector */}
+      {/* Forecast line chart (EOY only) */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>{symbol} Price Forecast</Text>
-            <Text style={styles.sectionSubtitle}>End of year prediction market data</Text>
+            <Text style={styles.sectionTitle}>Forecast history</Text>
+            <Text style={styles.sectionSubtitle}>End-of-year consensus over time</Text>
           </View>
           {trend && (
             <TrendArrow direction={trend.direction} changePercent={trend.changePercent} />
@@ -136,12 +149,11 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
         </View>
         <ForecastLineChart
           data={forecastHistory ?? []}
-          accentColor={token?.color ?? Colors.accent}
-          catalysts={catalysts}
+          accentColor={token?.color ?? colors.accent}
         />
       </View>
 
-      {/* Market summary + Confidence meter */}
+      {/* Confidence + summary (EOY only) */}
       {eoySeries && (
         <View style={styles.section}>
           <View style={styles.summaryRow}>
@@ -159,28 +171,41 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
         </View>
       )}
 
-      {/* Forecast sections with probability bars */}
-      {forecasts.map((series) => (
-        <View key={series.type} style={styles.section}>
+      {/* Distributions — segmented across available series */}
+      {selectedSeries && segmentOptions.length > 0 && (
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{series.label}</Text>
-            {series.expectedValue != null && (
-              <Text style={styles.expectedValue}>
-                Expected: {formatExpectedValue(series.expectedValue)}
-              </Text>
-            )}
+            <Text style={styles.sectionTitle}>Distribution</Text>
+            <Text style={styles.expectedValue}>
+              {SERIES_LABELS[selectedSeries.type].long}
+            </Text>
           </View>
 
-          {series.mostLikelyBracket && (
+          {segmentOptions.length > 1 && (
+            <View style={styles.segmentRow}>
+              <SegmentedControl
+                options={segmentOptions}
+                value={selectedType}
+                onChange={setSelectedType}
+              />
+            </View>
+          )}
+
+          {selectedSeries.mostLikelyBracket && (
             <View style={styles.headline}>
               <Text style={styles.headlineLabel}>Most likely</Text>
               <View style={styles.headlineValue}>
                 <Text style={styles.headlineRange}>
-                  {series.mostLikelyBracket.displayRange}
+                  {selectedSeries.mostLikelyBracket.displayRange}
                 </Text>
-                <View style={[styles.badge, { backgroundColor: (token?.color ?? Colors.accent) + '33' }]}>
-                  <Text style={[styles.badgeText, { color: token?.color ?? Colors.accent }]}>
-                    {series.mostLikelyBracket.probability}%
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: (token?.color ?? colors.accent) + '33' },
+                  ]}
+                >
+                  <Text style={[styles.badgeText, { color: token?.color ?? colors.accent }]}>
+                    {selectedSeries.mostLikelyBracket.probability}%
                   </Text>
                 </View>
               </View>
@@ -188,21 +213,19 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
           )}
 
           <ProbabilityChart
-            brackets={series.brackets}
-            accentColor={token?.color ?? Colors.chartBar}
+            brackets={selectedSeries.brackets}
+            accentColor={token?.color ?? colors.accent}
           />
         </View>
-      ))}
+      )}
 
-      {/* Scenario Explorer (EOY only) */}
       {eoySeries && eoySeries.brackets.length > 0 && (
         <ScenarioExplorer
           brackets={eoySeries.brackets}
-          accentColor={token?.color ?? Colors.accent}
+          accentColor={token?.color ?? colors.accent}
         />
       )}
 
-      {/* Make a Prediction */}
       <TouchableOpacity
         style={styles.predictButton}
         onPress={() => {
@@ -210,14 +233,12 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
           tabNav?.navigate('Predict');
         }}
       >
-        <Icon source="crystal-ball" size={20} color="#fff" />
-        <Text style={styles.predictButtonText}>Make a Prediction</Text>
+        <Icon source="approximately-equal-box" size={20} color={colors.onAccent} />
+        <Text style={styles.predictButtonText}>Make a call on {symbol}</Text>
       </TouchableOpacity>
 
-      {/* Source attribution */}
       <SourceAttribution />
 
-      {/* Disclaimer */}
       <View style={styles.disclaimer}>
         <Text style={styles.disclaimerText}>
           This app displays data from Kalshi prediction markets for informational
@@ -235,11 +256,10 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 16,
-    paddingBottom: 40,
+    padding: spacing.lg,
   },
   center: {
     justifyContent: 'center',
@@ -248,69 +268,72 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: radii.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 24,
-    color: '#fff',
-    fontWeight: '700',
+    ...typography.display,
+    color: colors.text1,
   },
   headerInfo: {
     flex: 1,
   },
   symbol: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.hero,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.text1,
   },
   name: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    ...typography.body,
+    color: colors.text2,
   },
   freshnessRow: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   sectionGap: {
-    marginBottom: 16,
+    marginBottom: spacing.lg,
   },
   section: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.bodyLg,
+    fontFamily: typography.title.fontFamily,
+    color: colors.text1,
   },
   sectionSubtitle: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    ...typography.caption,
+    color: colors.text2,
     marginTop: 2,
   },
   timePeriodRow: {
-    marginBottom: 12,
+    marginBottom: spacing.md,
+  },
+  segmentRow: {
+    marginBottom: spacing.md,
   },
   summaryRow: {
     flexDirection: 'row',
-    gap: 12,
+    gap: spacing.md,
     alignItems: 'flex-start',
   },
   summaryLeft: {
@@ -321,21 +344,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   expectedValue: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    ...typography.caption,
+    color: colors.text2,
   },
   headline: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    marginBottom: spacing.lg,
   },
   headlineLabel: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.text2,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
   },
   headlineValue: {
     flexDirection: 'row',
@@ -343,47 +367,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headlineRange: {
+    ...typography.title,
     fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
+    color: colors.text1,
   },
   badge: {
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm + 2,
+    paddingVertical: spacing.xs,
   },
   badgeText: {
-    fontSize: 14,
-    fontWeight: '700',
+    ...typography.bodyStrong,
   },
   errorText: {
-    color: Colors.textMuted,
-    fontSize: 14,
+    ...typography.body,
+    color: colors.text3,
   },
   predictButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    backgroundColor: Colors.accentDim,
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginBottom: 16,
+    gap: spacing.sm,
+    backgroundColor: colors.accent,
+    paddingVertical: spacing.md + 2,
+    borderRadius: radii.md,
+    marginBottom: spacing.lg,
   },
   predictButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    color: colors.onAccent,
   },
   disclaimer: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 8,
-    padding: 12,
-    marginTop: 8,
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
+    padding: spacing.md,
+    marginTop: spacing.sm,
   },
   disclaimerText: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textMuted,
+    color: colors.text3,
     lineHeight: 16,
   },
 });

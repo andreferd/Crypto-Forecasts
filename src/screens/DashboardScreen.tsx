@@ -1,26 +1,77 @@
-import React, { useCallback, useState, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useQueryClient } from '@tanstack/react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Colors } from '../constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors, spacing, typography } from '../theme';
 import { CRYPTO_TICKERS } from '../constants/kalshi';
-import { RootStackParamList } from '../types/navigation';
+import { MarketsStackParamList } from '../types/navigation';
 import { Header } from '../components/Header';
-import { CryptoCard } from '../components/CryptoCard';
+import { SymbolCard } from '../components/SymbolCard';
+import { WhatChangedStrip } from '../components/WhatChangedStrip';
 import { DataFreshnessIndicator } from '../components/DataFreshnessIndicator';
-import { ComparisonView } from '../components/ComparisonView';
 import { SourceAttribution } from '../components/SourceAttribution';
 import { EducationalTooltip } from '../components/EducationalTooltip';
 import { useForecast } from '../hooks/useForecast';
 import { useForecastHistory } from '../hooks/useForecastHistory';
 import { useSpotPrices } from '../hooks/useSpotPrices';
-import { computeTrend } from '../utils/marketAnalytics';
-import { TouchableOpacity } from 'react-native';
+import { computeTrend, computeConfidence } from '../utils/marketAnalytics';
+import { CryptoForecast } from '../types/market';
+import { ForecastPoint } from '../services/forecastHistory';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Dashboard'>;
+type Props = NativeStackScreenProps<MarketsStackParamList, 'Dashboard'>;
 
-function DashboardContent({ navigation }: Props) {
+function buildHeadline(
+  forecasts: CryptoForecast[],
+  histories: (ForecastPoint[] | undefined)[],
+): { title: string; subtitle: string } {
+  const parts = forecasts
+    .map((f, i) => {
+      const eoy = f.forecasts.find((s) => s.type === 'eoy');
+      const best = eoy?.mostLikelyBracket;
+      const history = histories[i];
+      const trend = history ? computeTrend(history) : null;
+      const confidence = eoy ? computeConfidence(eoy.brackets) : 0;
+      return { symbol: f.symbol, best, trend, confidence };
+    })
+    .filter((p) => p.best);
+
+  if (parts.length === 0) {
+    return {
+      title: 'Markets are warming up',
+      subtitle: 'Forecast data will land shortly.',
+    };
+  }
+
+  const biggestMover = parts
+    .filter((p) => p.trend && Math.abs(p.trend.changePercent) >= 3)
+    .sort((a, b) => Math.abs(b.trend!.changePercent) - Math.abs(a.trend!.changePercent))[0];
+
+  if (biggestMover) {
+    const dir = biggestMover.trend!.changePercent > 0 ? 'rising' : 'slipping';
+    return {
+      title: `${biggestMover.symbol} is ${dir} this week`,
+      subtitle: `${Math.abs(biggestMover.trend!.changePercent).toFixed(1)}% shift in the year-end consensus.`,
+    };
+  }
+
+  const mostConvinced = [...parts].sort((a, b) => b.confidence - a.confidence)[0];
+  if (mostConvinced.confidence >= 40) {
+    return {
+      title: `Tight consensus on ${mostConvinced.symbol}`,
+      subtitle: `${mostConvinced.best!.probability}% on ${mostConvinced.best!.displayRange} by year-end.`,
+    };
+  }
+
+  return {
+    title: 'Markets are split',
+    subtitle: 'No single range dominates — watch the full distribution below.',
+  };
+}
+
+export function DashboardScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const btcForecast = useForecast('BTC');
   const ethForecast = useForecast('ETH');
   const solForecast = useForecast('SOL');
@@ -28,7 +79,6 @@ function DashboardContent({ navigation }: Props) {
 
   const { data: spotPrices } = useSpotPrices();
 
-  // Fetch EOY history for trend arrows
   const btcEoyTicker = CRYPTO_TICKERS.BTC?.find((t) => t.type === 'eoy')?.seriesTicker;
   const ethEoyTicker = CRYPTO_TICKERS.ETH?.find((t) => t.type === 'eoy')?.seriesTicker;
   const solEoyTicker = CRYPTO_TICKERS.SOL?.find((t) => t.type === 'eoy')?.seriesTicker;
@@ -36,13 +86,9 @@ function DashboardContent({ navigation }: Props) {
   const { data: btcHistory, dataUpdatedAt: btcUpdatedAt } = useForecastHistory(btcEoyTicker);
   const { data: ethHistory } = useForecastHistory(ethEoyTicker);
   const { data: solHistory } = useForecastHistory(solEoyTicker);
+  const histories: (ForecastPoint[] | undefined)[] = [btcHistory, ethHistory, solHistory];
 
-  const btcTrend = useMemo(() => btcHistory ? computeTrend(btcHistory) : null, [btcHistory]);
-  const ethTrend = useMemo(() => ethHistory ? computeTrend(ethHistory) : null, [ethHistory]);
-  const solTrend = useMemo(() => solHistory ? computeTrend(solHistory) : null, [solHistory]);
-  const trends = [btcTrend, ethTrend, solTrend];
-
-  const [showComparison, setShowComparison] = useState(false);
+  const headline = useMemo(() => buildHeadline(forecasts, histories), [forecasts, histories]);
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -58,77 +104,59 @@ function DashboardContent({ navigation }: Props) {
     <View style={styles.root}>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.accent}
-            colors={[Colors.accent]}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
           />
         }
       >
         <Header />
 
-        {/* Data freshness indicator */}
-        {btcUpdatedAt > 0 && (
-          <View style={styles.freshnessRow}>
-            <DataFreshnessIndicator dataUpdatedAt={btcUpdatedAt} />
-          </View>
-        )}
-
-        {/* Comparison toggle */}
-        <View style={styles.compareRow}>
-          <TouchableOpacity
-            style={[styles.compareButton, showComparison && styles.compareButtonActive]}
-            onPress={() => setShowComparison(!showComparison)}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.compareText, showComparison && styles.compareTextActive]}>
-              {showComparison ? 'Hide Comparison' : 'Compare All'}
-            </Text>
-          </TouchableOpacity>
+        <View style={styles.hero}>
+          <Text style={styles.heroTitle}>{headline.title}</Text>
+          <Text style={styles.heroSubtitle}>{headline.subtitle}</Text>
+          {btcUpdatedAt > 0 && (
+            <View style={styles.freshness}>
+              <DataFreshnessIndicator dataUpdatedAt={btcUpdatedAt} />
+            </View>
+          )}
         </View>
 
-        {/* Comparison table */}
-        {showComparison && (
-          <View style={styles.comparisonSection}>
-            <ComparisonView forecasts={forecasts} spotPrices={spotPrices} />
-          </View>
-        )}
+        <EducationalTooltip />
 
-        {/* Staggered crypto cards */}
-        {forecasts.map((forecast, index) => (
-          <CryptoCard
-            key={forecast.symbol}
-            forecast={forecast}
-            onPress={() =>
-              navigation.navigate('CryptoDetail', { symbol: forecast.symbol })
-            }
-            trend={trends[index]}
-            animationDelay={index * 150}
-          />
-        ))}
+        <View style={styles.cards}>
+          {forecasts.map((forecast, i) => (
+            <SymbolCard
+              key={forecast.symbol}
+              forecast={forecast}
+              history={histories[i] ?? undefined}
+              spotPrice={
+                spotPrices
+                  ? spotPrices[forecast.symbol as keyof typeof spotPrices]
+                  : null
+              }
+              onPress={() =>
+                navigation.navigate('CryptoDetail', { symbol: forecast.symbol })
+              }
+            />
+          ))}
+        </View>
 
-        {/* Source attribution */}
-        <SourceAttribution />
+        <WhatChangedStrip />
 
-        <View style={styles.disclaimerContainer}>
+        <View style={styles.footer}>
+          <SourceAttribution />
           <Text style={styles.disclaimerText}>
-            Not financial advice. Data from Kalshi prediction markets for
-            informational purposes only.
+            Informational only · Not financial advice
           </Text>
         </View>
       </ScrollView>
-
-      {/* Educational tooltip overlay */}
-      <EducationalTooltip />
     </View>
   );
-}
-
-export function DashboardScreen(props: Props) {
-  return <DashboardContent {...props} />;
 }
 
 const styles = StyleSheet.create({
@@ -137,49 +165,45 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+    backgroundColor: colors.bg,
   },
   content: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: spacing.lg,
   },
-  freshnessRow: {
-    paddingHorizontal: 16,
-    marginBottom: 8,
+  hero: {
+    paddingHorizontal: spacing.xs,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
   },
-  compareRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 12,
+  heroTitle: {
+    ...typography.hero,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.text1,
+    marginBottom: spacing.xs + 2,
   },
-  compareButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: Colors.surfaceLight,
+  heroSubtitle: {
+    ...typography.bodyLg,
+    fontSize: 15,
+    color: colors.text2,
+    lineHeight: 22,
   },
-  compareButtonActive: {
-    backgroundColor: Colors.accentDim,
+  freshness: {
+    marginTop: spacing.sm,
   },
-  compareText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.textSecondary,
+  cards: {
+    marginBottom: spacing.md,
   },
-  compareTextActive: {
-    color: Colors.accent,
-  },
-  comparisonSection: {
-    marginBottom: 16,
-  },
-  disclaimerContainer: {
-    marginTop: 8,
-    paddingHorizontal: 8,
+  footer: {
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.sm,
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   disclaimerText: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: colors.text3,
     textAlign: 'center',
-    lineHeight: 14,
   },
 });

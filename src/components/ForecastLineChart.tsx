@@ -1,16 +1,14 @@
 import React, { useMemo, useState, useCallback, useRef } from 'react';
 import { View, StyleSheet, LayoutChangeEvent, PanResponder, Vibration } from 'react-native';
 import { Text } from 'react-native-paper';
-import Svg, { Polyline, Line, Circle, Rect, Polygon } from 'react-native-svg';
-import { Colors } from '../constants/colors';
+import Svg, { Polyline, Line, Circle } from 'react-native-svg';
+import { colors, spacing, typography } from '../theme';
 import { ForecastPoint } from '../services/forecastHistory';
-import { CatalystEvent } from '../constants/catalysts';
 
 interface ForecastLineChartProps {
   data: ForecastPoint[];
   accentColor: string;
   label?: string;
-  catalysts?: CatalystEvent[];
 }
 
 const CHART_HEIGHT = 200;
@@ -32,7 +30,6 @@ export function ForecastLineChart({
   data,
   accentColor,
   label,
-  catalysts,
 }: ForecastLineChartProps) {
   const [chartWidth, setChartWidth] = useState(300);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -77,26 +74,6 @@ export function ForecastLineChart({
 
     return { minVal: min, maxVal: max, points: pts, yLabels: yLbls, xLabels: xLbls };
   }, [data, drawWidth, drawHeight]);
-
-  // Compute catalyst positions on the chart
-  const catalystMarkers = useMemo(() => {
-    if (!catalysts || catalysts.length === 0 || data.length < 2) return [];
-
-    const minTs = data[0].timestamp;
-    const maxTs = data[data.length - 1].timestamp;
-    const range = maxTs - minTs;
-    if (range === 0) return [];
-
-    return catalysts
-      .map((c) => {
-        const ts = new Date(c.date + 'T12:00:00Z').getTime();
-        if (ts < minTs || ts > maxTs) return null;
-        const ratio = (ts - minTs) / range;
-        const x = PADDING.left + ratio * drawWidth;
-        return { ...c, x };
-      })
-      .filter((c): c is CatalystEvent & { x: number } => c != null);
-  }, [catalysts, data, drawWidth]);
 
   const getIndexFromX = useCallback(
     (touchX: number) => {
@@ -175,7 +152,6 @@ export function ForecastLineChart({
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={[styles.forecastValue, { color: accentColor }]}>
@@ -184,16 +160,14 @@ export function ForecastLineChart({
               : formatPrice(currentValue)}
           </Text>
           <Text style={styles.forecastLabel}>
-            {activePoint
-              ? formatDate(activePoint.timestamp)
-              : 'forecast'}
+            {activePoint ? formatDate(activePoint.timestamp) : 'forecast'}
           </Text>
         </View>
         {!activePoint && (
           <Text
             style={[
               styles.change,
-              { color: isPositive ? Colors.success : Colors.error },
+              { color: isPositive ? colors.up : colors.down },
             ]}
           >
             {isPositive ? '+' : ''}
@@ -202,14 +176,12 @@ export function ForecastLineChart({
         )}
       </View>
 
-      {/* Chart */}
       <View
         style={styles.chartContainer}
         onLayout={onLayout}
         {...panResponder.panHandlers}
       >
         <Svg width={chartWidth} height={CHART_HEIGHT}>
-          {/* Grid lines */}
           {yLabels.map((yl, i) => (
             <Line
               key={`grid-${i}`}
@@ -217,13 +189,12 @@ export function ForecastLineChart({
               y1={yl.y}
               x2={chartWidth - PADDING.right}
               y2={yl.y}
-              stroke={Colors.border}
+              stroke={colors.border}
               strokeWidth={0.5}
               strokeDasharray="4,4"
             />
           ))}
 
-          {/* Price line */}
           <Polyline
             points={points}
             fill="none"
@@ -233,31 +204,9 @@ export function ForecastLineChart({
             strokeLinecap="round"
           />
 
-          {/* Catalyst diamond markers */}
-          {catalystMarkers.map((c, i) => {
-            const y = PADDING.top + drawHeight + 2;
-            const s = 5;
-            return (
-              <Polygon
-                key={`cat-${i}`}
-                points={`${c.x},${y - s} ${c.x + s},${y} ${c.x},${y + s} ${c.x - s},${y}`}
-                fill={Colors.catalyst}
-                opacity={0.8}
-              />
-            );
-          })}
-
-          {/* Current price dot */}
           <Circle cx={lastX} cy={lastY} r={4} fill={accentColor} />
-          <Circle
-            cx={lastX}
-            cy={lastY}
-            r={7}
-            fill={accentColor}
-            opacity={0.3}
-          />
+          <Circle cx={lastX} cy={lastY} r={7} fill={accentColor} opacity={0.3} />
 
-          {/* Active crosshair */}
           {activePoint != null && (
             <>
               <Line
@@ -265,53 +214,33 @@ export function ForecastLineChart({
                 y1={PADDING.top}
                 x2={activeX}
                 y2={PADDING.top + drawHeight}
-                stroke={Colors.textSecondary}
+                stroke={colors.text2}
                 strokeWidth={1}
                 strokeDasharray="3,3"
               />
               <Circle cx={activeX} cy={activeY} r={5} fill={accentColor} />
-              <Circle
-                cx={activeX}
-                cy={activeY}
-                r={9}
-                fill={accentColor}
-                opacity={0.25}
-              />
+              <Circle cx={activeX} cy={activeY} r={9} fill={accentColor} opacity={0.25} />
             </>
           )}
         </Svg>
 
-        {/* Y-axis labels */}
         {yLabels.map((yl, i) => (
-          <View
-            key={`ylabel-${i}`}
-            style={[styles.yLabel, { top: yl.y - 7 }]}
-          >
+          <View key={`ylabel-${i}`} style={[styles.yLabel, { top: yl.y - 7 }]}>
             <Text style={styles.axisText}>{formatPrice(yl.val)}</Text>
           </View>
         ))}
 
-        {/* X-axis labels */}
         <View style={styles.xLabels}>
           {xLabels.map((xl, i) => (
-            <Text key={`xlabel-${i}`} style={[styles.axisText, { position: 'absolute', left: xl.x - 20 }]}>
+            <Text
+              key={`xlabel-${i}`}
+              style={[styles.axisText, { position: 'absolute', left: xl.x - 20 }]}
+            >
               {xl.label}
             </Text>
           ))}
         </View>
       </View>
-
-      {/* Catalyst legend */}
-      {catalystMarkers.length > 0 && (
-        <View style={styles.catalystLegend}>
-          {catalystMarkers.map((c, i) => (
-            <View key={`cleg-${i}`} style={styles.catalystItem}>
-              <Text style={styles.catalystDiamond}>{'◆'}</Text>
-              <Text style={styles.catalystLabel}>{c.label}</Text>
-            </View>
-          ))}
-        </View>
-      )}
 
       <Text style={styles.hint}>Touch chart to see values</Text>
     </View>
@@ -324,21 +253,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 8,
+    marginBottom: spacing.sm,
   },
   forecastValue: {
-    fontSize: 24,
-    fontWeight: '700',
+    ...typography.display,
+    ...typography.numeric,
   },
   forecastLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+    ...typography.caption,
+    color: colors.text2,
     marginTop: 2,
   },
   change: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 4,
+    ...typography.bodyStrong,
+    ...typography.numeric,
+    marginTop: spacing.xs,
   },
   chartContainer: {
     position: 'relative',
@@ -350,8 +279,10 @@ const styles = StyleSheet.create({
     width: 46,
   },
   axisText: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    lineHeight: 12,
+    color: colors.text3,
     textAlign: 'right',
   },
   xLabels: {
@@ -361,30 +292,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: 20,
   },
-  catalystLegend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 8,
-  },
-  catalystItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  catalystDiamond: {
-    fontSize: 8,
-    color: Colors.catalyst,
-  },
-  catalystLabel: {
-    fontSize: 9,
-    color: Colors.textMuted,
-  },
   hint: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: colors.text3,
     textAlign: 'center',
-    marginTop: 4,
+    marginTop: spacing.xs,
   },
   empty: {
     height: 120,
@@ -392,7 +305,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: Colors.textMuted,
-    fontSize: 13,
+    ...typography.body,
+    color: colors.text3,
   },
 });

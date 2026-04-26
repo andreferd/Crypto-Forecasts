@@ -1,29 +1,29 @@
-import { Colors } from './colors';
+import { colors } from '../theme/tokens';
 
 export interface TokenMeta {
   symbol: string;
   name: string;
   color: string;
-  icon: string; // emoji fallback
+  icon: string;
 }
 
 export const TOKENS: Record<string, TokenMeta> = {
   BTC: {
     symbol: 'BTC',
     name: 'Bitcoin',
-    color: Colors.btc,
+    color: colors.btc,
     icon: '₿',
   },
   ETH: {
     symbol: 'ETH',
     name: 'Ethereum',
-    color: Colors.eth,
+    color: colors.eth,
     icon: 'Ξ',
   },
   SOL: {
     symbol: 'SOL',
     name: 'Solana',
-    color: Colors.sol,
+    color: colors.sol,
     icon: '◎',
   },
 };

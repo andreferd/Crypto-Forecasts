@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { PredictionEvaluation } from '../types/storage';
 
@@ -25,9 +25,9 @@ function formatDate(ts: number): string {
 }
 
 const agreementConfig = {
-  agrees: { label: 'Market Agrees', color: Colors.success, icon: 'check-circle' as const },
-  disagrees: { label: 'Market Disagrees', color: Colors.error, icon: 'close-circle' as const },
-  neutral: { label: 'Neutral', color: Colors.textMuted, icon: 'minus-circle' as const },
+  agrees: { label: 'Market Agrees', color: colors.up, icon: 'check-circle' as const },
+  disagrees: { label: 'Market Disagrees', color: colors.down, icon: 'close-circle' as const },
+  neutral: { label: 'Neutral', color: colors.text3, icon: 'minus-circle' as const },
 };
 
 export function PredictionCard({ evaluation, onDelete }: Props) {
@@ -38,7 +38,7 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? Colors.accent }]}>
+        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? colors.accent }]}>
           <Text style={styles.icon}>{token?.icon ?? '?'}</Text>
         </View>
         <View style={styles.headerInfo}>
@@ -53,7 +53,7 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
           onPress={() => onDelete(prediction.id)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Icon source="delete-outline" size={20} color={Colors.textMuted} />
+          <Icon source="delete-outline" size={20} color={colors.text3} />
         </TouchableOpacity>
       </View>
 
@@ -69,7 +69,6 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
       </View>
 
       <View style={styles.footer}>
-        {/* Agreement badge */}
         <View style={[styles.badge, { backgroundColor: agreement.color + '22' }]}>
           <Icon source={agreement.icon} size={14} color={agreement.color} />
           <Text style={[styles.badgeText, { color: agreement.color }]}>
@@ -77,14 +76,12 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
           </Text>
         </View>
 
-        {/* Hypothetical result */}
         {hypotheticalResult !== 'unknown' && (
           <Text
             style={[
               styles.hypothetical,
               {
-                color:
-                  hypotheticalResult === 'correct' ? Colors.success : Colors.error,
+                color: hypotheticalResult === 'correct' ? colors.up : colors.down,
               },
             ]}
           >
@@ -98,48 +95,47 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
   },
   iconContainer: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: radii.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: '700',
+    ...typography.bodyStrong,
+    color: colors.text1,
   },
   headerInfo: {
     flex: 1,
   },
   predictionText: {
+    ...typography.bodyStrong,
     fontSize: 15,
-    fontWeight: '700',
-    color: Colors.text,
+    color: colors.text1,
     textTransform: 'capitalize',
   },
   dateText: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    ...typography.caption,
+    color: colors.text3,
     marginTop: 1,
   },
   stats: {
-    gap: 4,
-    marginBottom: 10,
+    gap: spacing.xs,
+    marginBottom: spacing.sm,
   },
   statRow: {
     flexDirection: 'row',
@@ -148,36 +144,34 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   statLabel: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
   },
   statValue: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    ...typography.bodyStrong,
+    color: colors.text1,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 8,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.sm,
   },
   badgeText: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...typography.captionStrong,
   },
   hypothetical: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...typography.captionStrong,
   },
 });

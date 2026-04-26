@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
+import { directionColor } from '../theme/semantics';
 import { TOKENS } from '../constants/tokens';
 import { SymbolDigest } from '../types/storage';
 
@@ -32,9 +33,8 @@ export function DigestCard({ digest }: Props) {
 
   return (
     <View style={styles.card}>
-      {/* Header */}
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? Colors.accent }]}>
+        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? colors.accent }]}>
           <Text style={styles.icon}>{token?.icon ?? '?'}</Text>
         </View>
         <View style={styles.headerInfo}>
@@ -45,8 +45,8 @@ export function DigestCard({ digest }: Props) {
               {'  '}
               <Text
                 style={{
-                  color: (digest.expectedValueDelta ?? 0) >= 0 ? Colors.success : Colors.error,
-                  fontWeight: '700',
+                  color: directionColor(digest.expectedValueDelta ?? 0),
+                  fontFamily: typography.bodyStrong.fontFamily,
                 }}
               >
                 {formatDelta(digest.expectedValueDelta)}
@@ -61,7 +61,6 @@ export function DigestCard({ digest }: Props) {
         </View>
       </View>
 
-      {/* Bracket diffs */}
       {topDiffs.length > 0 ? (
         <View style={styles.diffs}>
           {topDiffs.map((diff, i) => (
@@ -80,10 +79,7 @@ export function DigestCard({ digest }: Props) {
                 <Text style={styles.diffArrow}>→</Text>
                 <Text style={styles.diffNew}>{diff.newProb}%</Text>
                 <Text
-                  style={[
-                    styles.diffDelta,
-                    { color: diff.delta >= 0 ? Colors.success : Colors.error },
-                  ]}
+                  style={[styles.diffDelta, { color: directionColor(diff.delta) }]}
                 >
                   {diff.delta >= 0 ? '+' : ''}{diff.delta}%
                 </Text>
@@ -100,95 +96,101 @@ export function DigestCard({ digest }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 20,
-    color: '#fff',
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    color: colors.text1,
   },
   headerInfo: {
     flex: 1,
   },
   symbol: {
+    ...typography.title,
     fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
+    lineHeight: 22,
+    color: colors.text1,
   },
   evChange: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
     marginTop: 2,
   },
   diffs: {
-    gap: 6,
+    gap: spacing.xs + 2,
   },
   diffRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    backgroundColor: Colors.surfaceLight,
+    paddingVertical: spacing.xs + 2,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
   },
   biggestMover: {
     borderWidth: 1,
-    borderColor: Colors.accent + '44',
-    backgroundColor: Colors.accent + '11',
+    borderColor: colors.accent + '44',
+    backgroundColor: colors.accent + '11',
   },
   diffRange: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.text,
+    color: colors.text1,
     flex: 1,
-    marginRight: 8,
+    marginRight: spacing.sm,
   },
   diffValues: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: spacing.xs,
   },
   diffOld: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.text3,
   },
   diffArrow: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textMuted,
+    color: colors.text3,
   },
   diffNew: {
+    ...typography.bodyStrong,
     fontSize: 13,
-    color: Colors.text,
-    fontWeight: '600',
+    color: colors.text1,
   },
   diffDelta: {
+    ...typography.bodyStrong,
     fontSize: 13,
-    fontWeight: '700',
     minWidth: 42,
     textAlign: 'right',
   },
   noChanges: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.text3,
     textAlign: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
 });

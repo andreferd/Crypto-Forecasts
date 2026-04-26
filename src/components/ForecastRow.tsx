@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 
 interface ForecastRowProps {
   label: string;
@@ -30,32 +30,32 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
   label: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
     flex: 1,
   },
   right: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.sm,
   },
   value: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.text,
+    ...typography.bodyStrong,
+    ...typography.numeric,
+    color: colors.text1,
   },
   badge: {
-    backgroundColor: Colors.accentDim,
-    borderRadius: 6,
-    paddingHorizontal: 8,
+    backgroundColor: colors.accent + '22',
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
     paddingVertical: 2,
   },
   badgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.accent,
+    ...typography.captionStrong,
+    color: colors.accent,
   },
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii } from '../theme';
 
 export function LoadingSkeleton() {
   const opacity = useRef(new Animated.Value(0.3)).current;
@@ -42,30 +42,30 @@ export function LoadingSkeleton() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    gap: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
+    gap: spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: spacing.md,
   },
   circle: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.surfaceLight,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface2,
   },
   headerText: {
-    gap: 6,
+    gap: spacing.xs + 2,
   },
   line: {
     height: 12,
-    borderRadius: 4,
-    backgroundColor: Colors.surfaceLight,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
   },
   lineShort: {
     width: 60,

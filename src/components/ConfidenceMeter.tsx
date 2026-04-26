@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import Svg, { Path, Circle } from 'react-native-svg';
-import { Colors } from '../constants/colors';
+import { colors, typography } from '../theme';
+import { confidenceColor, confidenceLabel } from '../theme/semantics';
 import { PriceBracket } from '../types/market';
 import { computeConfidence } from '../utils/marketAnalytics';
 
@@ -28,21 +29,11 @@ function describeArc(startAngle: number, endAngle: number): string {
 
 export function ConfidenceMeter({ brackets }: ConfidenceMeterProps) {
   const confidence = useMemo(() => computeConfidence(brackets), [brackets]);
+  const color = confidenceColor(confidence);
+  const label = confidenceLabel(confidence);
 
-  const color =
-    confidence >= 60
-      ? Colors.confidenceHigh
-      : confidence >= 35
-        ? Colors.confidenceMid
-        : Colors.confidenceLow;
-
-  const label =
-    confidence >= 60 ? 'High' : confidence >= 35 ? 'Medium' : 'Low';
-
-  // Arc goes from 180° (left) to 360° (right) — semicircle
   const arcEnd = 180 + (confidence / 100) * 180;
 
-  // Needle tip position
   const needleAngle = (arcEnd * Math.PI) / 180;
   const needleX = CENTER + (RADIUS - 4) * Math.cos(needleAngle);
   const needleY = CENTER + (RADIUS - 4) * Math.sin(needleAngle);
@@ -50,15 +41,13 @@ export function ConfidenceMeter({ brackets }: ConfidenceMeterProps) {
   return (
     <View style={styles.container}>
       <Svg width={SIZE} height={SIZE / 2 + 10} viewBox={`0 ${SIZE / 2 - STROKE} ${SIZE} ${SIZE / 2 + STROKE + 10}`}>
-        {/* Background arc */}
         <Path
           d={describeArc(180, 360)}
-          stroke={Colors.surfaceLight}
+          stroke={colors.surface2}
           strokeWidth={STROKE}
           fill="none"
           strokeLinecap="round"
         />
-        {/* Filled arc */}
         {confidence > 0 && (
           <Path
             d={describeArc(180, arcEnd)}
@@ -68,7 +57,6 @@ export function ConfidenceMeter({ brackets }: ConfidenceMeterProps) {
             strokeLinecap="round"
           />
         )}
-        {/* Needle dot */}
         <Circle cx={needleX} cy={needleY} r={4} fill={color} />
       </Svg>
       <View style={styles.labels}>
@@ -88,12 +76,12 @@ const styles = StyleSheet.create({
     marginTop: -4,
   },
   score: {
-    fontSize: 24,
-    fontWeight: '700',
+    ...typography.display,
   },
   sublabel: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.text2,
     marginTop: 2,
   },
 });

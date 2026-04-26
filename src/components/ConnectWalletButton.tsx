@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, radii, typography } from '../theme';
 import { useWallet } from '../hooks/useWallet';
 
 export function ConnectWalletButton() {
@@ -27,8 +27,8 @@ export function ConnectWalletButton() {
       disabled={loading}
       style={styles.button}
       labelStyle={styles.label}
-      buttonColor={Colors.accent}
-      textColor="#fff"
+      buttonColor={colors.accent}
+      textColor={colors.onAccent}
     >
       {loading ? 'Connecting...' : 'Connect Wallet'}
     </Button>
@@ -37,12 +37,12 @@ export function ConnectWalletButton() {
 
 const styles = StyleSheet.create({
   button: {
-    borderRadius: 12,
+    borderRadius: radii.md,
     paddingVertical: 4,
     minWidth: 200,
   },
   label: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
   },
 });

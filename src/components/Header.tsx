@@ -1,32 +1,35 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { colors, spacing, typography } from '../theme';
+import { MarketsStackParamList } from '../types/navigation';
 import { useWallet } from '../hooks/useWallet';
 
 function truncateAddress(address: string): string {
-  return `${address.slice(0, 4)}...${address.slice(-4)}`;
+  return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
 export function Header() {
-  const { publicKey, disconnect } = useWallet();
+  const navigation = useNavigation<NativeStackNavigationProp<MarketsStackParamList>>();
+  const { publicKey, connected } = useWallet();
 
   return (
     <View style={styles.container}>
-      <View>
+      <View style={styles.left}>
         <Text style={styles.title}>Crypto Forecasts</Text>
-        {publicKey && (
-          <Text style={styles.address}>{truncateAddress(publicKey)}</Text>
-        )}
+        <Text style={styles.subtitle}>
+          {connected && publicKey ? truncateAddress(publicKey) : 'Kalshi prediction markets'}
+        </Text>
       </View>
-      {publicKey && (
-        <IconButton
-          icon="logout"
-          iconColor={Colors.textSecondary}
-          size={20}
-          onPress={disconnect}
-        />
-      )}
+      <IconButton
+        icon="cog-outline"
+        iconColor={colors.text2}
+        size={22}
+        onPress={() => navigation.navigate('Settings')}
+        accessibilityLabel="Open settings"
+      />
     </View>
   );
 }
@@ -36,17 +39,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  left: {
+    flex: 1,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.title,
+    color: colors.text1,
   },
-  address: {
-    fontSize: 12,
-    color: Colors.textSecondary,
+  subtitle: {
+    ...typography.caption,
+    color: colors.text2,
     marginTop: 2,
   },
 });

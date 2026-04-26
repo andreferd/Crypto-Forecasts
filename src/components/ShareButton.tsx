@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, radii, typography } from '../theme';
 import { ForecastSeries } from '../types/market';
 import { shareForcast } from '../utils/shareCard';
 
@@ -28,14 +28,14 @@ const styles = StyleSheet.create({
   button: {
     width: 36,
     height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.surfaceLight,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface2,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 18,
-    color: Colors.textSecondary,
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    color: colors.text2,
   },
 });

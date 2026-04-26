@@ -3,17 +3,17 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Icon } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors, fontFamily } from '../theme';
 import { MarketsStackParamList, RootTabParamList } from '../types/navigation';
-import { WalletGate } from '../components/WalletGate';
 import { DashboardScreen } from '../screens/DashboardScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { CryptoDetailScreen } from '../screens/CryptoDetailScreen';
-import { DigestScreen } from '../screens/DigestScreen';
 import { AccuracyTrackerScreen } from '../screens/AccuracyTrackerScreen';
 import { PredictionGameScreen } from '../screens/PredictionGameScreen';
 import { useAlertMonitor } from '../hooks/useAlertMonitor';
 import { useAccuracyLogger } from '../hooks/useAccuracyLogger';
-import { useDigest } from '../hooks/useDigest';
+import { usePredictionDriftMonitor } from '../hooks/usePredictionDriftMonitor';
 import { requestNotificationPermissions } from '../services/notificationService';
 
 const Stack = createNativeStackNavigator<MarketsStackParamList>();
@@ -24,7 +24,7 @@ function MarketsStack() {
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: Colors.background },
+        contentStyle: { backgroundColor: colors.bg },
         animation: 'slide_from_right',
       }}
     >
@@ -35,10 +35,23 @@ function MarketsStack() {
         options={({ route }) => ({
           headerShown: true,
           title: route.params.symbol,
-          headerStyle: { backgroundColor: Colors.surface },
-          headerTintColor: Colors.text,
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text1,
+          headerTitleStyle: { fontFamily: fontFamily.semibold, fontSize: 18 },
           headerShadowVisible: false,
         })}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          headerShown: true,
+          title: 'Settings',
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text1,
+          headerTitleStyle: { fontFamily: fontFamily.semibold, fontSize: 18 },
+          headerShadowVisible: false,
+        }}
       />
     </Stack.Navigator>
   );
@@ -47,6 +60,7 @@ function MarketsStack() {
 function BackgroundServices() {
   useAlertMonitor();
   useAccuracyLogger();
+  usePredictionDriftMonitor();
 
   useEffect(() => {
     requestNotificationPermissions();
@@ -55,13 +69,8 @@ function BackgroundServices() {
   return null;
 }
 
-function DigestTabWrapper() {
-  return <DigestScreen />;
-}
-
 function MainTabs() {
-  const { hasSignificantChanges, isFirstVisit } = useDigest();
-  const showDigestBadge = hasSignificantChanges && !isFirstVisit;
+  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -70,15 +79,25 @@ function MainTabs() {
         screenOptions={{
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: Colors.surface,
-            borderTopColor: Colors.border,
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
             borderTopWidth: 1,
+            height: 64 + insets.bottom,
+            paddingTop: 10,
+            paddingBottom: 10 + insets.bottom,
           },
-          tabBarActiveTintColor: Colors.accent,
-          tabBarInactiveTintColor: Colors.textMuted,
+          tabBarItemStyle: {
+            paddingVertical: 4,
+          },
+          tabBarIconStyle: {
+            marginBottom: 2,
+          },
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.text3,
           tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: '600',
+            fontFamily: fontFamily.semibold,
+            fontSize: 12,
+            letterSpacing: 0.2,
           },
         }}
       >
@@ -92,30 +111,12 @@ function MainTabs() {
           }}
         />
         <Tab.Screen
-          name="Digest"
-          component={DigestTabWrapper}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <Icon source="newspaper-variant-outline" size={size} color={color} />
-            ),
-            tabBarBadge: showDigestBadge ? '' : undefined,
-            tabBarBadgeStyle: showDigestBadge
-              ? {
-                  backgroundColor: Colors.accent,
-                  minWidth: 8,
-                  maxHeight: 8,
-                  borderRadius: 4,
-                  marginTop: 4,
-                }
-              : undefined,
-          }}
-        />
-        <Tab.Screen
           name="Accuracy"
           component={AccuracyTrackerScreen}
           options={{
+            tabBarLabel: 'Track',
             tabBarIcon: ({ color, size }) => (
-              <Icon source="target" size={size} color={color} />
+              <Icon source="bullseye-arrow" size={size} color={color} />
             ),
           }}
         />
@@ -124,7 +125,7 @@ function MainTabs() {
           component={PredictionGameScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <Icon source="crystal-ball" size={size} color={color} />
+              <Icon source="approximately-equal-box" size={size} color={color} />
             ),
           }}
         />
@@ -139,18 +140,16 @@ export function AppNavigator() {
       theme={{
         dark: true,
         colors: {
-          primary: Colors.accent,
-          background: Colors.background,
-          card: Colors.surface,
-          text: Colors.text,
-          border: Colors.border,
-          notification: Colors.accent,
+          primary: colors.accent,
+          background: colors.bg,
+          card: colors.surface,
+          text: colors.text1,
+          border: colors.border,
+          notification: colors.accent,
         },
       }}
     >
-      <WalletGate>
-        <MainTabs />
-      </WalletGate>
+      <MainTabs />
     </NavigationContainer>
   );
 }

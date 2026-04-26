@@ -3,10 +3,17 @@ import './src/polyfills';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { PaperProvider, MD3DarkTheme } from 'react-native-paper';
-import { Colors } from './src/constants/colors';
+import { PaperProvider } from 'react-native-paper';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from '@expo-google-fonts/inter';
 import { WalletProvider } from './src/hooks/useWallet';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { paperTheme } from './src/theme';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,22 +24,20 @@ const queryClient = new QueryClient({
   },
 });
 
-const darkTheme = {
-  ...MD3DarkTheme,
-  colors: {
-    ...MD3DarkTheme.colors,
-    background: Colors.background,
-    surface: Colors.surface,
-    primary: Colors.accent,
-    onSurface: Colors.text,
-    onSurfaceVariant: Colors.textSecondary,
-  },
-};
-
 export default function App() {
+  // Load Inter in the background. We do NOT gate render on this —
+  // if the font load stalls or fails, the app still shows (system fonts
+  // fall back automatically). Inter swaps in when ready.
+  useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
   return (
     <QueryClientProvider client={queryClient}>
-      <PaperProvider theme={darkTheme}>
+      <PaperProvider theme={paperTheme}>
         <SafeAreaProvider>
           <WalletProvider>
             <AppNavigator />

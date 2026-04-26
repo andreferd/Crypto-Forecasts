@@ -32,5 +32,12 @@ export function useAccuracyData() {
 
   const hasData = log.entries.length > 0;
 
-  return { metrics, weeklyReports, hasData, loading, refresh: loadData };
+  return {
+    metrics,
+    weeklyReports,
+    entries: log.entries,
+    hasData,
+    loading,
+    refresh: loadData,
+  };
 }

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { View, StyleSheet, PanResponder, LayoutChangeEvent } from 'react-native';
 import { Text } from 'react-native-paper';
 import Svg, { Line, Circle } from 'react-native-svg';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { PriceBracket } from '../types/market';
 
 interface ScenarioExplorerProps {
@@ -18,9 +18,8 @@ function formatPrice(value: number): string {
 
 export function ScenarioExplorer({ brackets, accentColor }: ScenarioExplorerProps) {
   const [sliderWidth, setSliderWidth] = useState(280);
-  const [thumbX, setThumbX] = useState(0.5); // 0-1 ratio
+  const [thumbX, setThumbX] = useState(0.5);
 
-  // Compute price range from brackets
   const { minPrice, maxPrice } = useMemo(() => {
     const floors = brackets.filter((b) => b.floorStrike != null).map((b) => b.floorStrike!);
     const caps = brackets.filter((b) => b.capStrike != null).map((b) => b.capStrike!);
@@ -31,7 +30,6 @@ export function ScenarioExplorer({ brackets, accentColor }: ScenarioExplorerProp
 
   const currentPrice = minPrice + thumbX * (maxPrice - minPrice);
 
-  // Compute probability of being above or below this price
   const { probAbove, probBelow } = useMemo(() => {
     const total = brackets.reduce((s, b) => s + b.probability, 0);
     if (total === 0) return { probAbove: 0, probBelow: 0 };
@@ -84,44 +82,38 @@ export function ScenarioExplorer({ brackets, accentColor }: ScenarioExplorerProp
     <View style={styles.container}>
       <Text style={styles.title}>What if {formatPrice(currentPrice)}?</Text>
 
-      {/* Slider */}
       <View style={styles.sliderContainer} onLayout={onLayout} {...panResponder.panHandlers}>
         <Svg width={sliderWidth} height={30}>
-          {/* Track */}
           <Line
             x1={0} y1={15} x2={sliderWidth} y2={15}
-            stroke={Colors.surfaceLight}
+            stroke={colors.surface2}
             strokeWidth={4}
             strokeLinecap="round"
           />
-          {/* Filled portion */}
           <Line
             x1={0} y1={15} x2={dotX} y2={15}
             stroke={accentColor}
             strokeWidth={4}
             strokeLinecap="round"
           />
-          {/* Thumb */}
           <Circle cx={dotX} cy={15} r={10} fill={accentColor} />
-          <Circle cx={dotX} cy={15} r={6} fill={Colors.surface} />
+          <Circle cx={dotX} cy={15} r={6} fill={colors.surface} />
         </Svg>
       </View>
 
-      {/* Price range labels */}
       <View style={styles.rangeLabels}>
         <Text style={styles.rangeText}>{formatPrice(minPrice)}</Text>
         <Text style={styles.rangeText}>{formatPrice(maxPrice)}</Text>
       </View>
 
-      {/* Probability result */}
       <View style={styles.results}>
         <View style={styles.resultBlock}>
-          <Text style={[styles.resultValue, { color: Colors.error }]}>{probBelow}%</Text>
+          <Text style={[styles.resultValue, { color: colors.down }]}>{probBelow}%</Text>
           <Text style={styles.resultLabel}>Below</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.resultBlock}>
-          <Text style={[styles.resultValue, { color: Colors.success }]}>{probAbove}%</Text>
+          <Text style={[styles.resultValue, { color: colors.up }]}>{probAbove}%</Text>
           <Text style={styles.resultLabel}>Above</Text>
         </View>
       </View>
@@ -131,17 +123,17 @@ export function ScenarioExplorer({ brackets, accentColor }: ScenarioExplorerProp
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.text,
-    marginBottom: 16,
+    ...typography.bodyLg,
+    fontFamily: typography.title.fontFamily,
+    color: colors.text1,
+    marginBottom: spacing.lg,
     textAlign: 'center',
   },
   sliderContainer: {
@@ -150,34 +142,37 @@ const styles = StyleSheet.create({
   rangeLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 4,
-    marginBottom: 16,
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
   },
   rangeText: {
+    ...typography.caption,
     fontSize: 10,
-    color: Colors.textMuted,
+    color: colors.text3,
   },
   results: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 24,
+    gap: spacing['2xl'],
   },
   resultBlock: {
     alignItems: 'center',
   },
   resultValue: {
+    ...typography.title,
     fontSize: 22,
-    fontWeight: '700',
+    ...typography.numeric,
   },
   resultLabel: {
+    ...typography.caption,
     fontSize: 11,
-    color: Colors.textSecondary,
+    color: colors.text2,
     marginTop: 2,
   },
   divider: {
     width: 1,
     height: 36,
-    backgroundColor: Colors.border,
+    backgroundColor: colors.border,
   },
 });

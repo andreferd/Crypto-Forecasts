@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { AccuracyMetrics } from '../types/storage';
 
@@ -22,7 +22,7 @@ export function AccuracySymbolCard({ metrics }: Props) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? Colors.accent }]}>
+        <View style={[styles.iconContainer, { backgroundColor: token?.color ?? colors.accent }]}>
           <Text style={styles.icon}>{token?.icon ?? '?'}</Text>
         </View>
         <View style={styles.headerInfo}>
@@ -43,10 +43,6 @@ export function AccuracySymbolCard({ metrics }: Props) {
             <Text style={styles.statLabel}>Avg Error %</Text>
             <Text style={styles.statValue}>{metrics.meanPercentError}%</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Brier Score</Text>
-            <Text style={styles.statValue}>{metrics.brierLikeScore}</Text>
-          </View>
           {metrics.latestEntry && (
             <View style={styles.latestRow}>
               <Text style={styles.latestLabel}>Latest:</Text>
@@ -66,81 +62,86 @@ export function AccuracySymbolCard({ metrics }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    marginBottom: spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
+    gap: spacing.md,
+    marginBottom: spacing.md,
   },
   iconContainer: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.pill,
     justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {
-    fontSize: 20,
-    color: '#fff',
-    fontWeight: '700',
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
+    color: colors.text1,
   },
   headerInfo: {
     flex: 1,
   },
   symbol: {
+    ...typography.title,
     fontSize: 18,
-    fontWeight: '700',
-    color: Colors.text,
+    lineHeight: 22,
+    color: colors.text1,
   },
   daysTracked: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
     marginTop: 2,
   },
   statsGrid: {
-    gap: 8,
+    gap: spacing.sm,
   },
   statItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 4,
+    paddingVertical: spacing.xs,
   },
   statLabel: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
   },
   statValue: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.text,
+    ...typography.bodyStrong,
+    ...typography.numeric,
+    color: colors.text1,
   },
   latestRow: {
-    marginTop: 4,
-    paddingTop: 8,
+    marginTop: spacing.xs,
+    paddingTop: spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: Colors.border,
+    borderTopColor: colors.border,
   },
   latestLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
+    ...typography.caption,
+    color: colors.text3,
     marginBottom: 2,
   },
   latestValue: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textSecondary,
+    color: colors.text2,
   },
   noData: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.textMuted,
+    color: colors.text3,
     textAlign: 'center',
-    paddingVertical: 8,
+    paddingVertical: spacing.sm,
   },
 });

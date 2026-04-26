@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
-import { Colors } from '../constants/colors';
+import { Text, Icon } from 'react-native-paper';
+import { colors, spacing, radii, typography } from '../theme';
 import { PriceBracket } from '../types/market';
 import { generateMarketSummary } from '../utils/marketAnalytics';
 
@@ -19,7 +19,7 @@ export function MarketSummaryCard({ symbol, brackets, spotPrice }: MarketSummary
 
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>{'📊'}</Text>
+      <Icon source="chart-bell-curve" size={18} color={colors.accent} />
       <Text style={styles.text}>{summary}</Text>
     </View>
   );
@@ -27,21 +27,17 @@ export function MarketSummaryCard({ symbol, brackets, spotPrice }: MarketSummary
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: colors.surface2,
+    borderRadius: radii.sm,
+    padding: spacing.md,
     flexDirection: 'row',
-    gap: 10,
+    gap: spacing.sm,
     alignItems: 'flex-start',
   },
-  icon: {
-    fontSize: 18,
-    marginTop: 1,
-  },
   text: {
+    ...typography.body,
     fontSize: 13,
-    color: Colors.text,
-    lineHeight: 19,
+    color: colors.text1,
     flex: 1,
   },
 });
