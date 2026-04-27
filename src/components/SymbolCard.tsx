@@ -1,13 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, LayoutChangeEvent } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Pressable, LayoutChangeEvent } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { confidenceColor, confidenceLabel } from '../theme/semantics';
 import { TOKENS } from '../constants/tokens';
+import { ForecastType } from '../constants/kalshi';
 import { CryptoForecast } from '../types/market';
 import { computeConfidence, computeTrend } from '../utils/marketAnalytics';
 import { ForecastPoint } from '../services/forecastHistory';
 import { DistributionCurve } from './DistributionCurve';
+
+const TYPE_LABELS: Record<ForecastType, { pill: string; arrow: string }> = {
+  eoy: { pill: 'EoY', arrow: 'by EoY' },
+  max: { pill: 'High', arrow: 'yearly high' },
+  min: { pill: 'Low', arrow: 'yearly low' },
+};
 
 interface Props {
   forecast: CryptoForecast;
@@ -25,14 +32,24 @@ function formatPrice(v: number | null | undefined): string {
 
 export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
   const [width, setWidth] = useState(320);
+  const [selectedType, setSelectedType] = useState<ForecastType>('eoy');
   const token = TOKENS[forecast.symbol];
-  const eoy = forecast.forecasts.find((f) => f.type === 'eoy');
-  const best = eoy?.mostLikelyBracket;
   const brandColor = token?.color ?? colors.accent;
 
+  // Available types in a stable display order
+  const availableTypes = useMemo<ForecastType[]>(() => {
+    const present = new Set(forecast.forecasts.map((f) => f.type));
+    return (['eoy', 'max', 'min'] as ForecastType[]).filter((t) => present.has(t));
+  }, [forecast.forecasts]);
+
+  const active =
+    forecast.forecasts.find((f) => f.type === selectedType) ??
+    forecast.forecasts.find((f) => f.type === 'eoy');
+  const best = active?.mostLikelyBracket;
+
   const confidence = useMemo(
-    () => (eoy ? computeConfidence(eoy.brackets) : 0),
-    [eoy],
+    () => (active ? computeConfidence(active.brackets) : 0),
+    [active],
   );
   const trend = useMemo(() => (history ? computeTrend(history) : null), [history]);
 
@@ -47,7 +64,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
     );
   }
 
-  if (forecast.isError || !eoy || !best) {
+  if (forecast.isError || !active || !best) {
     return (
       <View style={[styles.card, styles.cardMuted]}>
         <Header symbol={forecast.symbol} brandColor={brandColor} glyph={token?.icon ?? '?'} name={token?.name ?? ''} />
@@ -55,6 +72,8 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
       </View>
     );
   }
+
+  const labels = TYPE_LABELS[selectedType];
 
   const trendColor =
     trend?.direction === 'up'
@@ -66,63 +85,97 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
   const confColor = confidenceColor(confidence);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.85} onLayout={onLayout}>
-      <View style={styles.headerRow}>
-        <View style={[styles.glyph, { borderColor: brandColor + '66' }]}>
-          <Text style={[styles.glyphText, { color: brandColor }]}>{token?.icon ?? '?'}</Text>
-        </View>
-        <View style={styles.headerMid}>
-          <View style={styles.symbolRow}>
-            <Text style={styles.symbol}>{forecast.symbol}</Text>
-            <Text style={styles.name}>{token?.name ?? forecast.symbol}</Text>
+    <View style={styles.card} onLayout={onLayout}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
+      >
+        <View style={styles.headerRow}>
+          <View style={[styles.glyph, { borderColor: brandColor + '66' }]}>
+            <Text style={[styles.glyphText, { color: brandColor }]}>{token?.icon ?? '?'}</Text>
           </View>
-          <Text style={styles.spotLine}>
-            <Text style={styles.spotLabel}>now </Text>
-            <Text style={styles.spotValue}>{formatPrice(spotPrice)}</Text>
-            <Text style={styles.spotLabel}>  →  by EOY  </Text>
-            <Text style={[styles.forecastValue, { color: brandColor }]}>
-              {formatPrice(eoy.expectedValue)}
+          <View style={styles.headerMid}>
+            <View style={styles.symbolRow}>
+              <Text style={styles.symbol}>{forecast.symbol}</Text>
+              <Text style={styles.name}>{token?.name ?? forecast.symbol}</Text>
+            </View>
+            <Text style={styles.spotLine}>
+              <Text style={styles.spotLabel}>now </Text>
+              <Text style={styles.spotValue}>{formatPrice(spotPrice)}</Text>
+              <Text style={styles.spotLabel}>  →  {labels.arrow}  </Text>
+              <Text style={[styles.forecastValue, { color: brandColor }]}>
+                {formatPrice(active.expectedValue)}
+              </Text>
             </Text>
-          </Text>
-        </View>
-        {trend && (
-          <Text style={[styles.trend, { color: trendColor }]}>
-            {trendArrow} {trend.changePercent >= 0 ? '+' : ''}{trend.changePercent.toFixed(1)}%
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.curveWrap}>
-        <DistributionCurve
-          brackets={eoy.brackets}
-          accentColor={brandColor}
-          spotPrice={spotPrice ?? null}
-          height={104}
-          width={width - spacing.lg * 2}
-        />
-      </View>
-
-      <View style={styles.footerRow}>
-        <View style={styles.footerItem}>
-          <Text style={styles.footerLabel}>Most likely</Text>
-          <Text style={styles.footerValue}>{best.displayRange}</Text>
-        </View>
-        <View style={styles.footerSep} />
-        <View style={styles.footerItem}>
-          <Text style={styles.footerLabel}>Probability</Text>
-          <Text style={[styles.footerValue, { color: brandColor }]}>{best.probability}%</Text>
-        </View>
-        <View style={styles.footerSep} />
-        <View style={styles.footerItem}>
-          <Text style={styles.footerLabel}>Confidence</Text>
-          <View style={styles.confRow}>
-            <View style={[styles.confDot, { backgroundColor: confColor }]} />
-            <Text style={[styles.footerValue, { color: confColor }]}>{confidenceLabel(confidence)}</Text>
           </View>
+          {trend && (
+            <Text style={[styles.trend, { color: trendColor }]}>
+              {trendArrow} {trend.changePercent >= 0 ? '+' : ''}{trend.changePercent.toFixed(1)}%
+            </Text>
+          )}
         </View>
-        <Icon source="chevron-right" size={18} color={colors.text3} />
-      </View>
-    </TouchableOpacity>
+      </Pressable>
+
+      {availableTypes.length > 1 && (
+        <View style={styles.pillRow}>
+          {availableTypes.map((t) => {
+            const isActive = t === selectedType;
+            return (
+              <Pressable
+                key={t}
+                onPress={() => setSelectedType(t)}
+                hitSlop={10}
+                style={({ pressed }) => [
+                  styles.pill,
+                  isActive && { borderColor: brandColor + '88', backgroundColor: brandColor + '14' },
+                  pressed && { opacity: 0.6 },
+                ]}
+              >
+                <Text style={[styles.pillText, isActive && { color: brandColor }]}>
+                  {TYPE_LABELS[t].pill}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
+      >
+        <View style={styles.curveWrap}>
+          <DistributionCurve
+            brackets={active.brackets}
+            accentColor={brandColor}
+            spotPrice={selectedType === 'eoy' ? (spotPrice ?? null) : null}
+            height={104}
+            width={width - spacing.lg * 2}
+          />
+        </View>
+
+        <View style={styles.footerRow}>
+          <View style={styles.footerItem}>
+            <Text style={styles.footerLabel}>Most likely</Text>
+            <Text style={styles.footerValue}>{best.displayRange}</Text>
+          </View>
+          <View style={styles.footerSep} />
+          <View style={styles.footerItem}>
+            <Text style={styles.footerLabel}>Probability</Text>
+            <Text style={[styles.footerValue, { color: brandColor }]}>{best.probability}%</Text>
+          </View>
+          <View style={styles.footerSep} />
+          <View style={styles.footerItem}>
+            <Text style={styles.footerLabel}>Confidence</Text>
+            <View style={styles.confRow}>
+              <View style={[styles.confDot, { backgroundColor: confColor }]} />
+              <Text style={[styles.footerValue, { color: confColor }]}>{confidenceLabel(confidence)}</Text>
+            </View>
+          </View>
+          <Icon source="chevron-right" size={18} color={colors.text3} />
+        </View>
+      </Pressable>
+    </View>
   );
 }
 
@@ -144,6 +197,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: spacing.md,
+    gap: spacing.md,
+  },
+  zone: {
     gap: spacing.md,
   },
   cardMuted: {
@@ -252,6 +308,24 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginTop: -spacing.xs,
+  },
+  pill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface2,
+  },
+  pillText: {
+    ...typography.caption,
+    fontSize: 11,
+    color: colors.text2,
   },
   placeholder: {
     ...typography.body,
