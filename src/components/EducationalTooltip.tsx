@@ -95,10 +95,8 @@ const styles = StyleSheet.create({
     color: colors.text1,
   },
   body: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
-    lineHeight: 19,
   },
   em: {
     color: colors.text1,

@@ -367,9 +367,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   walletHint: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
-    lineHeight: 19,
   },
 });

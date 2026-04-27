@@ -214,13 +214,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
   },
   title: {
-    ...typography.title,
-    fontSize: 18,
+    ...typography.titleSm,
     color: colors.text1,
   },
   subtitle: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
     marginTop: 2,
     marginBottom: spacing.md,
@@ -265,13 +263,11 @@ const styles = StyleSheet.create({
   },
   bracketRange: {
     ...typography.caption,
-    fontSize: 12,
     color: colors.text2,
     ...typography.numeric,
   },
   bracketProb: {
-    ...typography.captionStrong,
-    fontSize: 11,
+    ...typography.microStrong,
     color: colors.text3,
     ...typography.numeric,
   },
@@ -335,13 +331,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   liveProbLabel: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
   },
   liveProbValue: {
-    ...typography.title,
-    fontSize: 18,
+    ...typography.titleSm,
     ...typography.numeric,
   },
   submitBtn: {

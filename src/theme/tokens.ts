@@ -88,6 +88,12 @@ export const fontFamily = {
 import type { TextStyle } from 'react-native';
 
 export const typography = {
+  microStrong: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 11,
+    lineHeight: 14,
+    letterSpacing: 0.2,
+  } satisfies TextStyle,
   caption: {
     fontFamily: fontFamily.regular,
     fontSize: 12,
@@ -99,6 +105,16 @@ export const typography = {
     fontSize: 12,
     lineHeight: 16,
     letterSpacing: 0.2,
+  } satisfies TextStyle,
+  bodySm: {
+    fontFamily: fontFamily.regular,
+    fontSize: 13,
+    lineHeight: 18,
+  } satisfies TextStyle,
+  bodySmStrong: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 13,
+    lineHeight: 18,
   } satisfies TextStyle,
   body: {
     fontFamily: fontFamily.regular,
@@ -113,6 +129,11 @@ export const typography = {
   bodyLg: {
     fontFamily: fontFamily.regular,
     fontSize: 16,
+    lineHeight: 24,
+  } satisfies TextStyle,
+  titleSm: {
+    fontFamily: fontFamily.semibold,
+    fontSize: 18,
     lineHeight: 24,
   } satisfies TextStyle,
   title: {

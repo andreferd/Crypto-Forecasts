@@ -214,8 +214,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   glyphText: {
-    ...typography.bodyStrong,
-    fontSize: 16,
+    ...typography.bodyLg,
+    fontFamily: typography.bodyStrong.fontFamily,
   },
   headerMid: {
     flex: 1,
@@ -227,8 +227,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   symbol: {
-    ...typography.title,
-    fontSize: 18,
+    ...typography.titleSm,
     color: colors.text1,
   },
   name: {
@@ -236,27 +235,23 @@ const styles = StyleSheet.create({
     color: colors.text3,
   },
   spotLine: {
-    ...typography.body,
-    fontSize: 12,
+    ...typography.caption,
     color: colors.text2,
   },
   spotLabel: {
     color: colors.text3,
   },
   spotValue: {
-    ...typography.bodyStrong,
-    fontSize: 13,
+    ...typography.bodySmStrong,
     color: colors.text1,
     ...typography.numeric,
   },
   forecastValue: {
-    ...typography.bodyStrong,
-    fontSize: 13,
+    ...typography.bodySmStrong,
     ...typography.numeric,
   },
   trend: {
     ...typography.captionStrong,
-    fontSize: 12,
     ...typography.numeric,
   },
   curveWrap: {
@@ -273,16 +268,14 @@ const styles = StyleSheet.create({
   },
   footerLine: {
     flex: 1,
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
   },
   footerLabel: {
     color: colors.text3,
   },
   footerEm: {
-    ...typography.bodyStrong,
-    fontSize: 13,
+    ...typography.bodySmStrong,
     color: colors.text1,
     ...typography.numeric,
   },
@@ -308,8 +301,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   confText: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
   },
   pill: {
     paddingHorizontal: spacing.sm,
@@ -320,8 +313,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface2,
   },
   pillText: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
     color: colors.text2,
   },
   placeholder: {

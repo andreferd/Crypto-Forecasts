@@ -17,8 +17,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
     color: colors.text3,
     fontStyle: 'italic',
   },

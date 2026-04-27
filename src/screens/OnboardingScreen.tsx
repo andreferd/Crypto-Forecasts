@@ -201,10 +201,8 @@ const styles = StyleSheet.create({
     color: colors.text1,
   },
   choiceDesc: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
-    lineHeight: 18,
   },
   chevron: {
     fontSize: 24,

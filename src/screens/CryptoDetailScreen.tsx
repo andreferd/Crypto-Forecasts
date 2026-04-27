@@ -245,7 +245,6 @@ const styles = StyleSheet.create({
   spotLine: {
     flex: 1,
     ...typography.body,
-    fontSize: 14,
     color: colors.text2,
   },
   spotLabel: {
@@ -253,18 +252,15 @@ const styles = StyleSheet.create({
   },
   spotValue: {
     ...typography.bodyStrong,
-    fontSize: 15,
     color: colors.text1,
     ...typography.numeric,
   },
   forecastValue: {
     ...typography.bodyStrong,
-    fontSize: 15,
     ...typography.numeric,
   },
   trend: {
-    ...typography.captionStrong,
-    fontSize: 13,
+    ...typography.bodySmStrong,
     ...typography.numeric,
   },
   pillRow: {
@@ -286,8 +282,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface2,
   },
   pillText: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
     color: colors.text2,
   },
   confChip: {
@@ -301,15 +297,14 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   confText: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
   },
   curveWrap: {
     alignItems: 'center',
   },
   summaryLine: {
     ...typography.body,
-    fontSize: 14,
     color: colors.text2,
     paddingTop: spacing.sm,
     borderTopWidth: 1,
@@ -320,7 +315,6 @@ const styles = StyleSheet.create({
   },
   summaryEm: {
     ...typography.bodyStrong,
-    fontSize: 14,
     color: colors.text1,
     ...typography.numeric,
   },

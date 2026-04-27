@@ -156,8 +156,8 @@ const styles = StyleSheet.create({
     color: colors.text1,
   },
   scoreLabel: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
     color: colors.text2,
     marginTop: 2,
   },
@@ -182,10 +182,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   disclaimer: {
-    ...typography.caption,
-    fontSize: 11,
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
     color: colors.text3,
-    lineHeight: 16,
     marginTop: spacing.xl,
     textAlign: 'center',
   },

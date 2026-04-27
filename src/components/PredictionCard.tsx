@@ -124,7 +124,6 @@ const styles = StyleSheet.create({
   },
   predictionText: {
     ...typography.bodyStrong,
-    fontSize: 15,
     color: colors.text1,
     textTransform: 'capitalize',
   },
@@ -144,8 +143,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   statLabel: {
-    ...typography.body,
-    fontSize: 13,
+    ...typography.bodySm,
     color: colors.text2,
   },
   statValue: {
