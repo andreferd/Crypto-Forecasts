@@ -18,13 +18,13 @@ export function AccuracyTrackerScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Track record</Text>
         <Text style={styles.subtitle}>
-          Year-end forecast vs. actual spot price over the past 30 days. Closer
+          Year-end forecast vs. actual spot price over the past 90 days. Closer
           lines = sharper market.
         </Text>
       </View>
 
       {SYMBOLS.map((s) => (
-        <TrackRecordChart key={s} symbol={s} days={30} />
+        <TrackRecordChart key={s} symbol={s} days={90} />
       ))}
 
       <Text style={styles.legend}>

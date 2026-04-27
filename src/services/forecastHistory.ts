@@ -27,6 +27,7 @@ export interface ForecastPoint {
 async function fetchTradesForTicker(
   ticker: string,
   daysBack: number,
+  maxPages: number,
 ): Promise<Trade[]> {
   const allTrades: Trade[] = [];
   let cursor: string | undefined;
@@ -34,8 +35,7 @@ async function fetchTradesForTicker(
   minDate.setDate(minDate.getDate() - daysBack);
   const minTime = minDate.toISOString();
 
-  // Paginate to get trades going back daysBack days (max 5 pages per bracket)
-  for (let page = 0; page < 5; page++) {
+  for (let page = 0; page < maxPages; page++) {
     const params: Record<string, string> = {
       ticker,
       limit: '500',
@@ -147,32 +147,44 @@ function computeDailyForecast(
   return dailyForecasts;
 }
 
+// Deep-paginate the few most-liquid brackets (they dominate weighted EV) and
+// single-page the long tail. Avoids 28-bracket × 10-page cursor walks (~3 min/series).
+const DEEP_PAGINATE_TOP_N = 5;
+const DEEP_MAX_PAGES = 10;
+const TAIL_MAX_PAGES = 1;
+
 export async function fetchForecastHistory(
   seriesTicker: string,
   daysBack = 30,
 ): Promise<ForecastPoint[]> {
-  // 1. Get all bracket markets
   const markets = await fetchMarketsBySeries(seriesTicker);
   if (markets.length === 0) return [];
 
-  // 2. Fetch trades for each bracket in parallel (batches of 5 to avoid rate limits)
-  const allTrades: Trade[] = [];
-  const tickers = markets.map((m) => m.ticker);
+  const ranked = [...markets].sort(
+    (a, b) => (parseFloat(b.volume_fp) || 0) - (parseFloat(a.volume_fp) || 0),
+  );
+  const deep = ranked.slice(0, DEEP_PAGINATE_TOP_N);
+  const tail = ranked.slice(DEEP_PAGINATE_TOP_N);
 
-  for (let i = 0; i < tickers.length; i += 5) {
-    const batch = tickers.slice(i, i + 5);
+  const allTrades: Trade[] = [];
+
+  // Top-N in parallel (5 concurrent is fine, matches old batch size)
+  const deepResults = await Promise.all(
+    deep.map((m) => fetchTradesForTicker(m.ticker, daysBack, DEEP_MAX_PAGES)),
+  );
+  for (const r of deepResults) allTrades.push(...r);
+
+  // Long tail: 1 page each, batches of 5
+  for (let i = 0; i < tail.length; i += 5) {
+    const batch = tail.slice(i, i + 5);
     const results = await Promise.all(
-      batch.map((ticker) => fetchTradesForTicker(ticker, daysBack)),
+      batch.map((m) => fetchTradesForTicker(m.ticker, daysBack, TAIL_MAX_PAGES)),
     );
-    for (const trades of results) {
-      allTrades.push(...trades);
-    }
-    // Small delay between batches to be polite
-    if (i + 5 < tickers.length) {
+    for (const r of results) allTrades.push(...r);
+    if (i + 5 < tail.length) {
       await new Promise((r) => setTimeout(r, 200));
     }
   }
 
-  // 3. Compute daily forecast values
   return computeDailyForecast(allTrades, markets);
 }

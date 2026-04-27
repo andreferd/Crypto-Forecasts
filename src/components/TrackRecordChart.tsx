@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import Svg, { Polyline, Line, Circle } from 'react-native-svg';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
@@ -15,8 +15,8 @@ interface Props {
   days?: number;
 }
 
-const HEIGHT = 150;
-const PAD = { top: 12, bottom: 24, left: 48, right: 12 };
+const HEIGHT = 156;
+const PAD = { top: 16, bottom: 24, left: 48, right: 18 };
 
 function formatPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -34,15 +34,15 @@ function formatDate(ts: number): string {
  * Forecast (Kalshi consensus EV) vs spot price (CoinGecko) over time.
  * Uses live data sources, not the daily local log — works from first launch.
  */
-export function TrackRecordChart({ symbol, days = 30 }: Props) {
-  const [width, setWidth] = useState(320);
+export function TrackRecordChart({ symbol, days = 90 }: Props) {
+  const [width, setWidth] = useState(280);
 
   const tickers = CRYPTO_TICKERS[symbol] ?? [];
   const eoyTicker = tickers.find((t) => t.type === 'eoy')?.seriesTicker;
   const { data: forecastHistory, isLoading: loadingForecast } = useForecastHistory(eoyTicker, days);
   const { data: spotHistory, isLoading: loadingSpot } = useSpotHistory(symbol, days);
 
-  const drawW = width - PAD.left - PAD.right;
+  const drawW = Math.max(0, width - PAD.left - PAD.right);
   const drawH = HEIGHT - PAD.top - PAD.bottom;
 
   const token = TOKENS[symbol];
@@ -60,10 +60,15 @@ export function TrackRecordChart({ symbol, days = 30 }: Props) {
 
   if (isLoading && !computed) {
     return (
-      <View style={styles.container} onLayout={onLayout}>
+      <View style={styles.container}>
         <ChartHeader symbol={symbol} forecastColor={forecastColor} />
-        <View style={styles.loading}>
-          <ActivityIndicator size="small" color={colors.accent} />
+        <View style={styles.skeleton} onLayout={onLayout}>
+          <View style={[styles.skeletonLine, { backgroundColor: forecastColor + '33', top: '35%' }]} />
+          <View style={[styles.skeletonLine, { backgroundColor: spotColor + '22', top: '60%' }]} />
+        </View>
+        <View style={styles.legend}>
+          <LegendDot color={forecastColor} label="Forecast" dashed />
+          <LegendDot color={spotColor} label="Spot" />
         </View>
       </View>
     );
@@ -71,7 +76,7 @@ export function TrackRecordChart({ symbol, days = 30 }: Props) {
 
   if (!computed) {
     return (
-      <View style={styles.container} onLayout={onLayout}>
+      <View style={styles.container}>
         <ChartHeader symbol={symbol} forecastColor={forecastColor} />
         <Text style={styles.empty}>Not enough data to draw the chart yet.</Text>
       </View>
@@ -79,10 +84,10 @@ export function TrackRecordChart({ symbol, days = 30 }: Props) {
   }
 
   return (
-    <View style={styles.container} onLayout={onLayout}>
+    <View style={styles.container}>
       <ChartHeader symbol={symbol} forecastColor={forecastColor} />
 
-      <View style={{ position: 'relative' }}>
+      <View style={{ position: 'relative' }} onLayout={onLayout}>
         <Svg width={width} height={HEIGHT}>
           {computed.yLabels.map((yl, i) => (
             <Line
@@ -192,7 +197,7 @@ function buildChart(
   const allValues = [...fclip.map((p) => p.forecast), ...sclip.map((p) => p.price)];
   const minV = Math.min(...allValues);
   const maxV = Math.max(...allValues);
-  const pad = (maxV - minV) * 0.12 || maxV * 0.05;
+  const pad = (maxV - minV) * 0.18 || maxV * 0.08;
   const lo = minV - pad;
   const hi = maxV + pad;
   const vRange = hi - lo;
@@ -339,10 +344,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.text2,
   },
-  loading: {
-    height: HEIGHT,
-    justifyContent: 'center',
-    alignItems: 'center',
+  skeleton: {
+    height: HEIGHT - PAD.bottom,
+    paddingHorizontal: PAD.left,
+    position: 'relative',
+  },
+  skeletonLine: {
+    position: 'absolute',
+    left: PAD.left,
+    right: PAD.right,
+    height: 2,
+    borderRadius: 1,
   },
   empty: {
     ...typography.body,
