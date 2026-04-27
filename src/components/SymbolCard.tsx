@@ -116,29 +116,35 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
         </View>
       </Pressable>
 
-      {availableTypes.length > 1 && (
-        <View style={styles.pillRow}>
-          {availableTypes.map((t) => {
-            const isActive = t === selectedType;
-            return (
-              <Pressable
-                key={t}
-                onPress={() => setSelectedType(t)}
-                hitSlop={10}
-                style={({ pressed }) => [
-                  styles.pill,
-                  isActive && { borderColor: brandColor + '88', backgroundColor: brandColor + '14' },
-                  pressed && { opacity: 0.6 },
-                ]}
-              >
-                <Text style={[styles.pillText, isActive && { color: brandColor }]}>
-                  {TYPE_LABELS[t].pill}
-                </Text>
-              </Pressable>
-            );
-          })}
+      <View style={styles.pillRow}>
+        {availableTypes.length > 1 ? (
+          <View style={styles.pillGroup}>
+            {availableTypes.map((t) => {
+              const isActive = t === selectedType;
+              return (
+                <Pressable
+                  key={t}
+                  onPress={() => setSelectedType(t)}
+                  hitSlop={10}
+                  style={({ pressed }) => [
+                    styles.pill,
+                    isActive && { borderColor: brandColor + '88', backgroundColor: brandColor + '14' },
+                    pressed && { opacity: 0.6 },
+                  ]}
+                >
+                  <Text style={[styles.pillText, isActive && { color: brandColor }]}>
+                    {TYPE_LABELS[t].pill}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : <View />}
+        <View style={styles.confChip}>
+          <View style={[styles.confDot, { backgroundColor: confColor }]} />
+          <Text style={[styles.confText, { color: confColor }]}>{confidenceLabel(confidence)}</Text>
         </View>
-      )}
+      </View>
 
       <Pressable
         onPress={onPress}
@@ -155,23 +161,11 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
         </View>
 
         <View style={styles.footerRow}>
-          <View style={styles.footerItem}>
-            <Text style={styles.footerLabel}>Most likely</Text>
-            <Text style={styles.footerValue}>{best.displayRange}</Text>
-          </View>
-          <View style={styles.footerSep} />
-          <View style={styles.footerItem}>
-            <Text style={styles.footerLabel}>Probability</Text>
-            <Text style={[styles.footerValue, { color: brandColor }]}>{best.probability}%</Text>
-          </View>
-          <View style={styles.footerSep} />
-          <View style={styles.footerItem}>
-            <Text style={styles.footerLabel}>Confidence</Text>
-            <View style={styles.confRow}>
-              <View style={[styles.confDot, { backgroundColor: confColor }]} />
-              <Text style={[styles.footerValue, { color: confColor }]}>{confidenceLabel(confidence)}</Text>
-            </View>
-          </View>
+          <Text style={styles.footerLine}>
+            <Text style={[styles.footerEm, { color: brandColor }]}>{best.probability}%</Text>
+            <Text style={styles.footerLabel}>  chance of  </Text>
+            <Text style={styles.footerEm}>{best.displayRange}</Text>
+          </Text>
           <Icon source="chevron-right" size={18} color={colors.text3} />
         </View>
       </Pressable>
@@ -277,32 +271,20 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
-  footerItem: {
+  footerLine: {
     flex: 1,
-    gap: 2,
+    ...typography.body,
+    fontSize: 13,
+    color: colors.text2,
   },
   footerLabel: {
-    ...typography.caption,
-    fontSize: 9,
     color: colors.text3,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
   },
-  footerValue: {
+  footerEm: {
     ...typography.bodyStrong,
     fontSize: 13,
     color: colors.text1,
     ...typography.numeric,
-  },
-  footerSep: {
-    width: 1,
-    height: 24,
-    backgroundColor: colors.border,
-  },
-  confRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
   },
   confDot: {
     width: 6,
@@ -311,8 +293,23 @@ const styles = StyleSheet.create({
   },
   pillRow: {
     flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     gap: spacing.xs,
     marginTop: -spacing.xs,
+  },
+  pillGroup: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  confChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  confText: {
+    ...typography.caption,
+    fontSize: 11,
   },
   pill: {
     paddingHorizontal: spacing.sm,

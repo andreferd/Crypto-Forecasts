@@ -6,7 +6,7 @@ import { colors, spacing, typography } from '../theme';
 export function SourceAttribution() {
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Powered by Kalshi prediction markets</Text>
+      <Text style={styles.text}>Kalshi · CoinGecko · Informational only · Not financial advice</Text>
     </View>
   );
 }

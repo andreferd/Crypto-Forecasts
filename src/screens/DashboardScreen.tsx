@@ -116,15 +116,11 @@ export function DashboardScreen({ navigation }: Props) {
       >
         <Header />
 
-        <View style={styles.hero}>
-          <Text style={styles.heroTitle}>{headline.title}</Text>
-          <Text style={styles.heroSubtitle}>{headline.subtitle}</Text>
-          {btcUpdatedAt > 0 && (
-            <View style={styles.freshness}>
-              <DataFreshnessIndicator dataUpdatedAt={btcUpdatedAt} />
-            </View>
-          )}
-        </View>
+        {btcUpdatedAt > 0 && (
+          <View style={styles.freshness}>
+            <DataFreshnessIndicator dataUpdatedAt={btcUpdatedAt} />
+          </View>
+        )}
 
         <EducationalTooltip />
 
@@ -148,12 +144,7 @@ export function DashboardScreen({ navigation }: Props) {
 
         <WhatChangedStrip />
 
-        <View style={styles.footer}>
-          <SourceAttribution />
-          <Text style={styles.disclaimerText}>
-            Informational only · Not financial advice
-          </Text>
-        </View>
+        <SourceAttribution />
       </ScrollView>
     </View>
   );
@@ -170,40 +161,12 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
   },
-  hero: {
-    paddingHorizontal: spacing.xs,
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
-  heroTitle: {
-    ...typography.hero,
-    fontSize: 26,
-    lineHeight: 32,
-    color: colors.text1,
-    marginBottom: spacing.xs + 2,
-  },
-  heroSubtitle: {
-    ...typography.bodyLg,
-    fontSize: 15,
-    color: colors.text2,
-    lineHeight: 22,
-  },
   freshness: {
     marginTop: spacing.sm,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.xs,
   },
   cards: {
     marginBottom: spacing.md,
-  },
-  footer: {
-    marginTop: spacing.md,
-    paddingHorizontal: spacing.sm,
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  disclaimerText: {
-    ...typography.caption,
-    fontSize: 10,
-    color: colors.text3,
-    textAlign: 'center',
   },
 });

@@ -19,9 +19,9 @@ export function Header() {
     <View style={styles.container}>
       <View style={styles.left}>
         <Text style={styles.title}>Crypto Forecasts</Text>
-        <Text style={styles.subtitle}>
-          {connected && publicKey ? truncateAddress(publicKey) : 'Kalshi prediction markets'}
-        </Text>
+        {connected && publicKey && (
+          <Text style={styles.subtitle}>{truncateAddress(publicKey)}</Text>
+        )}
       </View>
       <IconButton
         icon="cog-outline"
