@@ -185,7 +185,10 @@ export function SettingsScreen() {
       </Section>
 
       <Section title="About">
-        <Row label="App version" value={Constants.expoConfig?.version ?? '—'} />
+        <Row
+          label="App version"
+          value={`${Constants.expoConfig?.version ?? '—'} · beta`}
+        />
         <Row label="Data source" value="Kalshi · CoinGecko" />
       </Section>
     </ScrollView>
