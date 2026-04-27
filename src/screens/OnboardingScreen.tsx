@@ -63,6 +63,8 @@ export function OnboardingScreen() {
         />
       </View>
 
+      <View style={styles.spacer} />
+
       <Text style={styles.footer}>
         Data is from Kalshi prediction markets and CoinGecko. Informational only.
       </Text>
@@ -134,7 +136,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg,
   },
   content: {
+    flexGrow: 1,
     paddingHorizontal: spacing.xl,
+  },
+  spacer: {
+    flex: 1,
+    minHeight: spacing['2xl'],
   },
   brand: {
     alignItems: 'center',

@@ -28,12 +28,12 @@ export function Header({ dataUpdatedAt }: Props) {
           <View style={styles.betaBadge}>
             <Text style={styles.betaText}>BETA</Text>
           </View>
+          {dataUpdatedAt ? <DataFreshnessIndicator dataUpdatedAt={dataUpdatedAt} /> : null}
         </View>
         {connected && publicKey && (
           <Text style={styles.subtitle}>{truncateAddress(publicKey)}</Text>
         )}
       </View>
-      {dataUpdatedAt ? <DataFreshnessIndicator dataUpdatedAt={dataUpdatedAt} /> : null}
       <IconButton
         icon="cog-outline"
         iconColor={colors.text2}

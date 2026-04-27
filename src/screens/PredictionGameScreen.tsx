@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Text, ActivityIndicator } from 'react-native-paper';
+import { Text, ActivityIndicator, Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, typography } from '../theme';
 import { usePredictions } from '../hooks/usePredictions';
@@ -98,7 +98,13 @@ export function PredictionGameScreen() {
         </View>
       ) : (
         <View style={styles.emptyList}>
-          <Text style={styles.emptyText}>No calls yet. Your first prediction appears here.</Text>
+          <View style={styles.emptyIconWrap}>
+            <Icon source="approximately-equal-box" size={28} color={colors.text3} />
+          </View>
+          <Text style={styles.emptyTitle}>No calls yet</Text>
+          <Text style={styles.emptyText}>
+            Pick a price range above to lock in your first prediction.
+          </Text>
         </View>
       )}
 
@@ -180,13 +186,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xs,
   },
   emptyList: {
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.xl,
     alignItems: 'center',
+    gap: spacing.xs,
+  },
+  emptyIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyTitle: {
+    ...typography.bodyStrong,
+    color: colors.text2,
+    textAlign: 'center',
   },
   emptyText: {
-    ...typography.body,
+    ...typography.bodySm,
     color: colors.text3,
     textAlign: 'center',
+    paddingHorizontal: spacing.lg,
   },
   disclaimer: {
     ...typography.microStrong,

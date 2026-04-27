@@ -248,7 +248,8 @@ const styles = StyleSheet.create({
   bracketRow: {
     gap: spacing.xs,
     paddingTop: spacing.sm,
-    paddingHorizontal: spacing.xs,
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.lg,
   },
   bracketPill: {
     paddingHorizontal: spacing.sm,
