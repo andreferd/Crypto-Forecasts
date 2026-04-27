@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, StyleSheet, LayoutChangeEvent } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Text, Icon } from 'react-native-paper';
 import Svg, { Polyline, Line, Circle } from 'react-native-svg';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
@@ -78,7 +78,15 @@ export function TrackRecordChart({ symbol, days = 90 }: Props) {
     return (
       <View style={styles.container}>
         <ChartHeader symbol={symbol} forecastColor={forecastColor} />
-        <Text style={styles.empty}>Not enough data to draw the chart yet.</Text>
+        <View style={styles.emptyState}>
+          <View style={styles.emptyIconWrap}>
+            <Icon source="chart-line-variant" size={24} color={colors.text3} />
+          </View>
+          <Text style={styles.emptyTitle}>No history yet</Text>
+          <Text style={styles.emptyText}>
+            We'll plot the year-end forecast against spot once we have enough trades.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -362,5 +370,32 @@ const styles = StyleSheet.create({
     color: colors.text3,
     textAlign: 'center',
     paddingVertical: spacing.lg,
+  },
+  emptyState: {
+    paddingVertical: spacing.lg,
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  emptyIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: radii.pill,
+    backgroundColor: colors.surface2,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyTitle: {
+    ...typography.bodyStrong,
+    color: colors.text2,
+    textAlign: 'center',
+  },
+  emptyText: {
+    ...typography.bodySm,
+    color: colors.text3,
+    textAlign: 'center',
+    paddingHorizontal: spacing.lg,
   },
 });

@@ -121,7 +121,8 @@ export function ForecastLineChart({
   if (data.length < 2) {
     return (
       <View style={styles.empty}>
-        <Text style={styles.emptyText}>Loading forecast data...</Text>
+        <View style={[styles.skelLine, { backgroundColor: accentColor + '33', top: '40%' }]} />
+        <View style={[styles.skelLine, { backgroundColor: colors.text3 + '22', top: '65%' }]} />
       </View>
     );
   }
@@ -301,11 +302,13 @@ const styles = StyleSheet.create({
   },
   empty: {
     height: 120,
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'relative',
   },
-  emptyText: {
-    ...typography.body,
-    color: colors.text3,
+  skelLine: {
+    position: 'absolute',
+    left: PADDING.left,
+    right: 12,
+    height: 2,
+    borderRadius: 1,
   },
 });
