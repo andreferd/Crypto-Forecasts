@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -16,7 +16,6 @@ import { useAlertMonitor } from '../hooks/useAlertMonitor';
 import { useAccuracyLogger } from '../hooks/useAccuracyLogger';
 import { usePredictionDriftMonitor } from '../hooks/usePredictionDriftMonitor';
 import { useOnboarding } from '../hooks/useOnboarding';
-import { requestNotificationPermissions } from '../services/notificationService';
 
 const Stack = createNativeStackNavigator<MarketsStackParamList>();
 const Tab = createBottomTabNavigator<RootTabParamList>();
@@ -63,11 +62,6 @@ function BackgroundServices() {
   useAlertMonitor();
   useAccuracyLogger();
   usePredictionDriftMonitor();
-
-  useEffect(() => {
-    requestNotificationPermissions();
-  }, []);
-
   return null;
 }
 

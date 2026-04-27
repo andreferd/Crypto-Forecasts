@@ -7,6 +7,13 @@ import { usePredictions } from '../hooks/usePredictions';
 import { NewPredictionForm } from '../components/NewPredictionForm';
 import { PredictionCard } from '../components/PredictionCard';
 
+function localDateKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export function PredictionGameScreen() {
   const insets = useSafeAreaInsets();
   const { evaluations, loaded, makePrediction, deletePrediction } = usePredictions();
@@ -27,15 +34,15 @@ export function PredictionGameScreen() {
   const streak = useMemo(() => {
     if (evaluations.length === 0) return 0;
     const dates = new Set(
-      evaluations.map((e) => new Date(e.prediction.createdAt).toISOString().slice(0, 10)),
+      evaluations.map((e) => localDateKey(new Date(e.prediction.createdAt))),
     );
     let count = 0;
     const cursor = new Date();
     cursor.setHours(0, 0, 0, 0);
     // Allow a 1-day grace if the most recent prediction was yesterday but not today.
-    let grace = !dates.has(cursor.toISOString().slice(0, 10));
+    let grace = !dates.has(localDateKey(cursor));
     while (true) {
-      const key = cursor.toISOString().slice(0, 10);
+      const key = localDateKey(cursor);
       if (dates.has(key)) {
         count++;
         grace = false;

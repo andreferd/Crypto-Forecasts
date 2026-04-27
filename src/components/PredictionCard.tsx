@@ -43,7 +43,7 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
         </View>
         <View style={styles.headerInfo}>
           <Text style={styles.predictionText}>
-            {prediction.symbol} {prediction.direction} {formatPrice(prediction.targetPrice)}
+            {prediction.symbol} {prediction.direction === 'above' ? 'above' : 'below'} {formatPrice(prediction.targetPrice)}
           </Text>
           <Text style={styles.dateText}>
             Made {formatDate(prediction.createdAt)}
@@ -125,7 +125,6 @@ const styles = StyleSheet.create({
   predictionText: {
     ...typography.bodyStrong,
     color: colors.text1,
-    textTransform: 'capitalize',
   },
   dateText: {
     ...typography.caption,

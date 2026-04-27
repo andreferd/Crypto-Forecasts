@@ -298,7 +298,6 @@ const styles = StyleSheet.create({
     ...typography.bodyStrong,
     ...typography.numeric,
     color: colors.text1,
-    textTransform: 'capitalize',
   },
   directionRow: {
     flexDirection: 'row',

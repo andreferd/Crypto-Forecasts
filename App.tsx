@@ -11,6 +11,13 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+// Kick off the MCI font load at module load time, before any Icon mounts.
+// The createIconSet auto-load via componentDidMount can race first paint on
+// Expo 52 / new-arch cold launch, leaving icons as empty <Text/>.
+MaterialCommunityIcons.loadFont().catch((err) => {
+  console.warn('[App] MaterialCommunityIcons.loadFont failed:', err);
+});
 import { WalletProvider } from './src/hooks/useWallet';
 import { OnboardingProvider } from './src/hooks/useOnboarding';
 import { AppNavigator } from './src/navigation/AppNavigator';
