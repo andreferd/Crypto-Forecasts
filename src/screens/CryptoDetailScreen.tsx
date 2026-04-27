@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
-import { Text, Icon, ActivityIndicator } from 'react-native-paper';
+import { Text, Icon } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { colors, spacing, radii, typography } from '../theme';
@@ -75,9 +75,20 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
 
   if (isLoading) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.content, { paddingBottom: 80 + insets.bottom }]}
+      >
+        <View style={styles.section}>
+          <View style={[styles.skelLine, { width: '60%' }]} />
+          <View style={[styles.skelLine, styles.skelLineTall]} />
+          <View style={[styles.skelLine, { width: '40%' }]} />
+        </View>
+        <View style={styles.section}>
+          <View style={[styles.skelLine, { width: '45%' }]} />
+          <View style={[styles.skelLine, styles.skelLineTall]} />
+        </View>
+      </ScrollView>
     );
   }
 
@@ -227,6 +238,17 @@ const styles = StyleSheet.create({
   errorText: {
     ...typography.body,
     color: colors.text3,
+  },
+  skelLine: {
+    height: 14,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
+    width: '70%',
+  },
+  skelLineTall: {
+    height: 120,
+    width: '100%',
+    marginTop: spacing.xs,
   },
   section: {
     backgroundColor: colors.surface,

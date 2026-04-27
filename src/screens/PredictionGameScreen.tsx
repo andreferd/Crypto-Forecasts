@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Text, ActivityIndicator, Icon } from 'react-native-paper';
+import { Text, Icon } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, typography } from '../theme';
 import { usePredictions } from '../hooks/usePredictions';
@@ -58,9 +58,17 @@ export function PredictionGameScreen() {
 
   if (!loaded) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
+      >
+        <Text style={styles.title}>Call it</Text>
+        <View style={styles.skelCard}>
+          <View style={[styles.skelLine, { width: '40%' }]} />
+          <View style={[styles.skelLine, { width: '70%', marginTop: 6 }]} />
+          <View style={[styles.skelLine, styles.skelLineTall]} />
+        </View>
+      </ScrollView>
     );
   }
 
@@ -134,11 +142,23 @@ const styles = StyleSheet.create({
   content: {
     padding: spacing.lg,
   },
-  center: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.bg,
+  skelCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    padding: spacing.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginBottom: spacing.lg,
+  },
+  skelLine: {
+    height: 14,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
+  },
+  skelLineTall: {
+    height: 140,
+    width: '100%',
+    marginTop: spacing.md,
   },
   title: {
     ...typography.hero,
