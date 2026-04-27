@@ -57,17 +57,28 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
 
   if (forecast.isLoading) {
     return (
-      <View style={[styles.card, styles.cardMuted]}>
-        <Header symbol={forecast.symbol} brandColor={brandColor} glyph={token?.icon ?? '?'} name={token?.name ?? ''} />
-        <Text style={styles.placeholder}>Loading…</Text>
+      <View style={styles.card}>
+        <PlaceholderHeader
+          symbol={forecast.symbol}
+          brandColor={brandColor}
+          glyph={token?.icon ?? '?'}
+          name={token?.name ?? forecast.symbol}
+        />
+        <View style={styles.skeletonBlock} />
+        <View style={[styles.skeletonBlock, styles.skeletonBlockTall]} />
       </View>
     );
   }
 
   if (forecast.isError || !active || !best) {
     return (
-      <View style={[styles.card, styles.cardMuted]}>
-        <Header symbol={forecast.symbol} brandColor={brandColor} glyph={token?.icon ?? '?'} name={token?.name ?? ''} />
+      <View style={styles.card}>
+        <PlaceholderHeader
+          symbol={forecast.symbol}
+          brandColor={brandColor}
+          glyph={token?.icon ?? '?'}
+          name={token?.name ?? forecast.symbol}
+        />
         <Text style={styles.placeholder}>Forecast unavailable</Text>
       </View>
     );
@@ -173,11 +184,27 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
   );
 }
 
-function Header({ brandColor, glyph }: { symbol: string; brandColor: string; glyph: string; name: string }) {
+function PlaceholderHeader({
+  symbol,
+  brandColor,
+  glyph,
+  name,
+}: {
+  symbol: string;
+  brandColor: string;
+  glyph: string;
+  name: string;
+}) {
   return (
     <View style={styles.headerRow}>
       <View style={[styles.glyph, { borderColor: brandColor + '66' }]}>
         <Text style={[styles.glyphText, { color: brandColor }]}>{glyph}</Text>
+      </View>
+      <View style={styles.headerMid}>
+        <View style={styles.symbolRow}>
+          <Text style={styles.symbol}>{symbol}</Text>
+          <Text style={styles.name}>{name}</Text>
+        </View>
       </View>
     </View>
   );
@@ -195,9 +222,6 @@ const styles = StyleSheet.create({
   },
   zone: {
     gap: spacing.md,
-  },
-  cardMuted: {
-    opacity: 0.7,
   },
   headerRow: {
     flexDirection: 'row',
@@ -322,5 +346,16 @@ const styles = StyleSheet.create({
     color: colors.text3,
     paddingVertical: spacing.lg,
     textAlign: 'center',
+  },
+  skeletonBlock: {
+    height: 14,
+    borderRadius: radii.sm,
+    backgroundColor: colors.surface2,
+    width: '70%',
+  },
+  skeletonBlockTall: {
+    height: 96,
+    width: '100%',
+    marginTop: spacing.xs,
   },
 });
