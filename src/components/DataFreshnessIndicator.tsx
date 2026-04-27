@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text } from 'react-native-paper';
-import { colors, spacing, typography } from '../theme';
+import { colors } from '../theme';
 import { freshnessColor } from '../theme/semantics';
 
 interface DataFreshnessIndicatorProps {
@@ -30,30 +29,19 @@ export function DataFreshnessIndicator({ dataUpdatedAt }: DataFreshnessIndicator
 
   const minutesAgo = (Date.now() - dataUpdatedAt) / 60_000;
   const dotColor = freshnessColor(minutesAgo);
-  const timeAgo = getTimeAgo(dataUpdatedAt);
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.dot, { backgroundColor: dotColor }]} />
-      <Text style={styles.text}>Updated {timeAgo}</Text>
-    </View>
+    <View
+      style={[styles.dot, { backgroundColor: dotColor }]}
+      accessibilityLabel={`Data updated ${getTimeAgo(dataUpdatedAt)}`}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs + 2,
-  },
   dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  text: {
-    ...typography.caption,
-    fontSize: 11,
-    color: colors.text2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });

@@ -10,7 +10,6 @@ import { MarketsStackParamList } from '../types/navigation';
 import { Header } from '../components/Header';
 import { SymbolCard } from '../components/SymbolCard';
 import { WhatChangedStrip } from '../components/WhatChangedStrip';
-import { DataFreshnessIndicator } from '../components/DataFreshnessIndicator';
 import { SourceAttribution } from '../components/SourceAttribution';
 import { EducationalTooltip } from '../components/EducationalTooltip';
 import { useForecast } from '../hooks/useForecast';
@@ -114,13 +113,7 @@ export function DashboardScreen({ navigation }: Props) {
           />
         }
       >
-        <Header />
-
-        {btcUpdatedAt > 0 && (
-          <View style={styles.freshness}>
-            <DataFreshnessIndicator dataUpdatedAt={btcUpdatedAt} />
-          </View>
-        )}
+        <Header dataUpdatedAt={btcUpdatedAt} />
 
         <EducationalTooltip />
 
@@ -160,11 +153,6 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: spacing.lg,
-  },
-  freshness: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.xs,
   },
   cards: {
     marginBottom: spacing.md,

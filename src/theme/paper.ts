@@ -17,7 +17,7 @@ export const paperTheme = {
     onSurface: colors.text1,
     onSurfaceVariant: colors.text2,
     outline: colors.border,
-    outlineVariant: colors.borderStrong,
+    outlineVariant: colors.border,
   },
   fonts: {
     ...MD3DarkTheme.fonts,

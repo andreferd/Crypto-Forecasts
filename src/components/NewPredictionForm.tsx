@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { useForecast } from '../hooks/useForecast';
 import { computeMarketProbForTarget } from '../utils/predictionScoring';
-import { ProbabilityChart } from './ProbabilityChart';
+import { DistributionCurve } from './DistributionCurve';
 import { PriceBracket } from '../types/market';
 
 interface Props {
@@ -100,12 +100,47 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
         {brackets.length === 0 ? (
           <Text style={styles.empty}>Loading {symbol} brackets…</Text>
         ) : (
-          <ProbabilityChart
-            brackets={brackets}
-            accentColor={brandColor}
-            onSelectBracket={setSelected}
-            selectedTicker={selected?.ticker}
-          />
+          <>
+            <DistributionCurve
+              brackets={brackets}
+              accentColor={brandColor}
+              height={120}
+              width={300}
+              showAxis
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.bracketRow}
+            >
+              {brackets
+                .filter((b) => b.floorStrike != null || b.capStrike != null)
+                .map((b) => {
+                  const isActive = selected?.ticker === b.ticker;
+                  return (
+                    <Pressable
+                      key={b.ticker}
+                      onPress={() => setSelected(b)}
+                      style={({ pressed }) => [
+                        styles.bracketPill,
+                        isActive && {
+                          borderColor: brandColor,
+                          backgroundColor: brandColor + '1A',
+                        },
+                        pressed && { opacity: 0.7 },
+                      ]}
+                    >
+                      <Text style={[styles.bracketRange, isActive && { color: colors.text1 }]}>
+                        {b.displayRange}
+                      </Text>
+                      <Text style={[styles.bracketProb, isActive && { color: brandColor }]}>
+                        {b.probability}%
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+            </ScrollView>
+          </>
         )}
       </View>
 
@@ -144,11 +179,7 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
             <Text style={styles.submitText}>Lock in</Text>
           </TouchableOpacity>
         </View>
-      ) : (
-        <View style={styles.tip}>
-          <Text style={styles.tipText}>👆 Tap any bar to set your call</Text>
-        </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -214,6 +245,35 @@ const styles = StyleSheet.create({
   },
   chartWrap: {
     marginBottom: spacing.md,
+    alignItems: 'center',
+  },
+  bracketRow: {
+    gap: spacing.xs,
+    paddingTop: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  bracketPill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 6,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface2,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+  },
+  bracketRange: {
+    ...typography.caption,
+    fontSize: 12,
+    color: colors.text2,
+    ...typography.numeric,
+  },
+  bracketProb: {
+    ...typography.captionStrong,
+    fontSize: 11,
+    color: colors.text3,
+    ...typography.numeric,
   },
   empty: {
     ...typography.body,
@@ -295,15 +355,5 @@ const styles = StyleSheet.create({
     ...typography.bodyLg,
     fontFamily: typography.bodyStrong.fontFamily,
     color: colors.onAccent,
-  },
-  tip: {
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  tipText: {
-    ...typography.body,
-    fontSize: 13,
-    color: colors.text3,
-    fontStyle: 'italic',
   },
 });

@@ -62,12 +62,7 @@ export function PredictionGameScreen() {
       style={styles.container}
       contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
     >
-      <View style={styles.header}>
-        <Text style={styles.title}>Call it</Text>
-        <Text style={styles.subtitle}>
-          Think you know where crypto lands by year-end? Set a target and see how the market answers.
-        </Text>
-      </View>
+      <Text style={styles.title}>Call it</Text>
 
       {stats.total > 0 && (
         <View style={styles.scoreRow}>
@@ -132,21 +127,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.bg,
   },
-  header: {
-    marginBottom: spacing.xl,
-    paddingHorizontal: spacing.xs,
-  },
   title: {
     ...typography.hero,
     fontSize: 26,
     lineHeight: 32,
     color: colors.text1,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.text2,
-    marginTop: spacing.xs,
-    lineHeight: 19,
+    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.xs,
   },
   scoreRow: {
     flexDirection: 'row',

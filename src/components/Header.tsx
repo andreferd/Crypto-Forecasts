@@ -6,12 +6,17 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { colors, spacing, typography } from '../theme';
 import { MarketsStackParamList } from '../types/navigation';
 import { useWallet } from '../hooks/useWallet';
+import { DataFreshnessIndicator } from './DataFreshnessIndicator';
 
 function truncateAddress(address: string): string {
   return `${address.slice(0, 4)}…${address.slice(-4)}`;
 }
 
-export function Header() {
+interface Props {
+  dataUpdatedAt?: number;
+}
+
+export function Header({ dataUpdatedAt }: Props) {
   const navigation = useNavigation<NativeStackNavigationProp<MarketsStackParamList>>();
   const { publicKey, connected } = useWallet();
 
@@ -23,6 +28,7 @@ export function Header() {
           <Text style={styles.subtitle}>{truncateAddress(publicKey)}</Text>
         )}
       </View>
+      {dataUpdatedAt ? <DataFreshnessIndicator dataUpdatedAt={dataUpdatedAt} /> : null}
       <IconButton
         icon="cog-outline"
         iconColor={colors.text2}

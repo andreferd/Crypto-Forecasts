@@ -6,9 +6,7 @@ export const palette = {
   bg: '#0E0F11',
   surface: '#16181C',
   surface2: '#1E2126',
-  surface3: '#262A31',
   border: '#272A30',
-  borderStrong: '#363B43',
   text1: '#ECECEE',
   text2: '#A6A8AD',
   text3: '#6B6E75',
@@ -16,7 +14,6 @@ export const palette = {
   // Brand / accent
   accent: '#8AB4F8',
   accentStrong: '#B8D2FF',
-  accentMuted: '#3F6FB8',
 
   // Semantic
   up: '#6FBF8A',
@@ -28,8 +25,6 @@ export const palette = {
   eth: '#7B8AC4',
   sol: '#9B7CD1',
 
-  // Misc
-  catalyst: '#C0A8E0',
   overlay: 'rgba(0, 0, 0, 0.5)',
 } as const;
 
@@ -38,9 +33,7 @@ export const colors = {
   bg: palette.bg,
   surface: palette.surface,
   surface2: palette.surface2,
-  surface3: palette.surface3,
   border: palette.border,
-  borderStrong: palette.borderStrong,
 
   // Text roles
   text1: palette.text1,
@@ -51,7 +44,6 @@ export const colors = {
   // Brand
   accent: palette.accent,
   accentStrong: palette.accentStrong,
-  accentMuted: palette.accentMuted,
 
   // Semantic
   up: palette.up,
@@ -63,12 +55,6 @@ export const colors = {
   eth: palette.eth,
   sol: palette.sol,
 
-  // Chart bands (accent with alpha)
-  rangeBand50: 'rgba(138, 180, 248, 0.15)',
-  rangeBand80: 'rgba(138, 180, 248, 0.07)',
-
-  // Misc
-  catalyst: palette.catalyst,
   overlay: palette.overlay,
 } as const;
 
