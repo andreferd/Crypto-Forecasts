@@ -9,7 +9,7 @@ export const palette = {
   border: '#272A30',
   text1: '#ECECEE',
   text2: '#A6A8AD',
-  text3: '#6B6E75',
+  text3: '#878A91', // 4.67:1 on surface2, 5.55:1 on bg — meets WCAG AA small text
 
   // Brand / accent
   accent: '#8AB4F8',
