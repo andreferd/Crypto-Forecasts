@@ -8,7 +8,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, typography } from '../theme';
 import { useWallet } from '../hooks/useWallet';
 import { useAlertSettings } from '../hooks/useAlertSettings';
+import { useOnboarding } from '../hooks/useOnboarding';
+import { OnboardingChoice } from '../services/storageService';
 import { ConnectWalletButton } from '../components/ConnectWalletButton';
+
+const EDU_TOOLTIP_KEY = '@crypto_forecasts_edu_seen';
+
+const EXPERIENCE_OPTIONS: { value: OnboardingChoice; label: string; hint: string }[] = [
+  { value: 'newbie', label: 'New to this', hint: 'Show explainers in Markets.' },
+  { value: 'advanced', label: 'Experienced', hint: 'Skip the explainers.' },
+];
 
 function truncateAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-6)}`;
@@ -18,7 +27,18 @@ export function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { publicKey, connected, disconnect } = useWallet();
   const { settings, toggleEnabled, setThreshold } = useAlertSettings();
+  const { choice, complete } = useOnboarding();
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'undetermined' | 'unknown'>('unknown');
+
+  const handleExperienceChange = async (next: OnboardingChoice) => {
+    if (next === choice) return;
+    if (next === 'advanced') {
+      await AsyncStorage.setItem(EDU_TOOLTIP_KEY, '1');
+    } else {
+      await AsyncStorage.removeItem(EDU_TOOLTIP_KEY);
+    }
+    await complete(next);
+  };
 
   useEffect(() => {
     Notifications.getPermissionsAsync().then((res) => {
@@ -74,6 +94,28 @@ export function SettingsScreen() {
             <ConnectWalletButton />
           </View>
         )}
+      </Section>
+
+      <Section title="Experience">
+        {EXPERIENCE_OPTIONS.map((opt, idx) => {
+          const active = choice === opt.value;
+          return (
+            <TouchableOpacity
+              key={opt.value}
+              style={[styles.choiceRow, idx > 0 && styles.choiceRowDivider]}
+              onPress={() => handleExperienceChange(opt.value)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.choiceText}>
+                <Text style={styles.rowLabel}>{opt.label}</Text>
+                <Text style={styles.choiceHint}>{opt.hint}</Text>
+              </View>
+              <View style={[styles.radio, active && styles.radioActive]}>
+                {active && <View style={styles.radioDot} />}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </Section>
 
       <Section title="Shift Alerts">
@@ -279,6 +321,43 @@ const styles = StyleSheet.create({
   dangerText: {
     ...typography.bodyStrong,
     color: colors.down,
+  },
+  choiceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    gap: spacing.md,
+  },
+  choiceRowDivider: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  choiceText: {
+    flex: 1,
+  },
+  choiceHint: {
+    ...typography.caption,
+    color: colors.text3,
+    marginTop: 2,
+  },
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioActive: {
+    borderColor: colors.accent,
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.accent,
   },
   walletCta: {
     padding: spacing.lg,
