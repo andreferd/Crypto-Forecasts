@@ -1,13 +1,12 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useForecast } from './useForecast';
+import { useAllForecasts } from './useAllForecasts';
+import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
 import { DigestSnapshot, SymbolDigest } from '../types/storage';
 import { getDigestSnapshot, saveDigestSnapshot } from '../services/storageService';
 import { computeFullDigest, buildCurrentSnapshot } from '../utils/digestAnalytics';
 
 export function useDigest() {
-  const btc = useForecast('BTC');
-  const eth = useForecast('ETH');
-  const sol = useForecast('SOL');
+  const forecasts = useAllForecasts();
 
   const [oldSnapshot, setOldSnapshot] = useState<DigestSnapshot | null>(null);
   const [snapshotLoaded, setSnapshotLoaded] = useState(false);
@@ -20,19 +19,20 @@ export function useDigest() {
   }, []);
 
   const currentData = useMemo(
-    () => [
-      { symbol: 'BTC', forecasts: btc.forecasts },
-      { symbol: 'ETH', forecasts: eth.forecasts },
-      { symbol: 'SOL', forecasts: sol.forecasts },
-    ],
-    [btc.forecasts, eth.forecasts, sol.forecasts],
+    () =>
+      ALL_CRYPTO_KEYS.map((symbol) => ({
+        symbol,
+        forecasts: forecasts[symbol].forecasts,
+      })),
+    [forecasts],
   );
 
-  const isLoading = !snapshotLoaded || btc.isLoading || eth.isLoading || sol.isLoading;
-  const hasData = btc.forecasts.length > 0 || eth.forecasts.length > 0 || sol.forecasts.length > 0;
+  const isLoading =
+    !snapshotLoaded || ALL_CRYPTO_KEYS.some((s) => forecasts[s].isLoading);
+  const hasData = ALL_CRYPTO_KEYS.some((s) => forecasts[s].forecasts.length > 0);
 
   // Auto-initialize baseline silently the first time we have forecast data
-  // and no prior snapshot. Avoids any "welcome to digest" UX.
+  // and no prior snapshot.
   useEffect(() => {
     if (!snapshotLoaded || oldSnapshot != null || !hasData) return;
     const initial = buildCurrentSnapshot(currentData);
@@ -63,7 +63,7 @@ export function useDigest() {
     isLoading,
     hasData,
     snapshotAge,
-    isFirstVisit: false, // legacy; auto-init means we never expose this state to UI
+    isFirstVisit: false,
     hasSignificantChanges,
     markDigestSeen,
   };

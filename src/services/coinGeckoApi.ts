@@ -5,32 +5,40 @@ const client = axios.create({
   timeout: 10000,
 });
 
-export interface SpotPrices {
-  BTC: number | null;
-  ETH: number | null;
-  SOL: number | null;
-}
+export type SpotPrices = Record<string, number | null>;
 
-const COINGECKO_IDS: Record<string, string> = {
+export const COINGECKO_IDS: Record<string, string> = {
   BTC: 'bitcoin',
   ETH: 'ethereum',
   SOL: 'solana',
+  XRP: 'ripple',
+  DOGE: 'dogecoin',
+  AVAX: 'avalanche-2',
+  LINK: 'chainlink',
+  DOT: 'polkadot',
+  BNB: 'binancecoin',
 };
 
+const CG_TO_SYMBOL: Record<string, string> = Object.fromEntries(
+  Object.entries(COINGECKO_IDS).map(([sym, id]) => [id, sym]),
+);
+
 export async function fetchSpotPrices(): Promise<SpotPrices> {
+  const result: SpotPrices = Object.fromEntries(
+    Object.keys(COINGECKO_IDS).map((sym) => [sym, null]),
+  );
   try {
     const ids = Object.values(COINGECKO_IDS).join(',');
     const { data } = await client.get('/simple/price', {
       params: { ids, vs_currencies: 'usd' },
     });
-
-    return {
-      BTC: data.bitcoin?.usd ?? null,
-      ETH: data.ethereum?.usd ?? null,
-      SOL: data.solana?.usd ?? null,
-    };
+    for (const [id, payload] of Object.entries(data ?? {})) {
+      const sym = CG_TO_SYMBOL[id];
+      if (sym) result[sym] = (payload as { usd?: number })?.usd ?? null;
+    }
+    return result;
   } catch {
-    return { BTC: null, ETH: null, SOL: null };
+    return result;
   }
 }
 

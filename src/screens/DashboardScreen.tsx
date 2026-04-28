@@ -5,15 +5,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, typography } from '../theme';
-import { CRYPTO_TICKERS } from '../constants/kalshi';
+import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
 import { MarketsStackParamList } from '../types/navigation';
 import { Header } from '../components/Header';
 import { SymbolCard } from '../components/SymbolCard';
 import { WhatChangedStrip } from '../components/WhatChangedStrip';
 import { SourceAttribution } from '../components/SourceAttribution';
 import { EducationalTooltip } from '../components/EducationalTooltip';
-import { useForecast } from '../hooks/useForecast';
-import { useForecastHistory } from '../hooks/useForecastHistory';
+import { useAllForecasts } from '../hooks/useAllForecasts';
+import { useAllForecastHistories } from '../hooks/useAllForecastHistories';
 import { useSpotPrices } from '../hooks/useSpotPrices';
 import { computeTrend, computeConfidence } from '../utils/marketAnalytics';
 import { CryptoForecast } from '../types/market';
@@ -71,21 +71,15 @@ function buildHeadline(
 
 export function DashboardScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
-  const btcForecast = useForecast('BTC');
-  const ethForecast = useForecast('ETH');
-  const solForecast = useForecast('SOL');
-  const forecasts = [btcForecast, ethForecast, solForecast];
+  const allForecasts = useAllForecasts();
+  const forecasts = ALL_CRYPTO_KEYS.map((s) => allForecasts[s]);
 
   const { data: spotPrices } = useSpotPrices();
 
-  const btcEoyTicker = CRYPTO_TICKERS.BTC?.find((t) => t.type === 'eoy')?.seriesTicker;
-  const ethEoyTicker = CRYPTO_TICKERS.ETH?.find((t) => t.type === 'eoy')?.seriesTicker;
-  const solEoyTicker = CRYPTO_TICKERS.SOL?.find((t) => t.type === 'eoy')?.seriesTicker;
-
-  const { data: btcHistory, dataUpdatedAt: btcUpdatedAt } = useForecastHistory(btcEoyTicker);
-  const { data: ethHistory } = useForecastHistory(ethEoyTicker);
-  const { data: solHistory } = useForecastHistory(solEoyTicker);
-  const histories: (ForecastPoint[] | undefined)[] = [btcHistory, ethHistory, solHistory];
+  const { histories: historyMap, dataUpdatedAt } = useAllForecastHistories();
+  const histories: (ForecastPoint[] | undefined)[] = ALL_CRYPTO_KEYS.map(
+    (s) => historyMap[s],
+  );
 
   const headline = useMemo(() => buildHeadline(forecasts, histories), [forecasts, histories]);
 
@@ -113,7 +107,7 @@ export function DashboardScreen({ navigation }: Props) {
           />
         }
       >
-        <Header dataUpdatedAt={btcUpdatedAt} />
+        <Header dataUpdatedAt={dataUpdatedAt} />
 
         <EducationalTooltip />
 
@@ -123,11 +117,7 @@ export function DashboardScreen({ navigation }: Props) {
               key={forecast.symbol}
               forecast={forecast}
               history={histories[i] ?? undefined}
-              spotPrice={
-                spotPrices
-                  ? spotPrices[forecast.symbol as keyof typeof spotPrices]
-                  : null
-              }
+              spotPrice={spotPrices?.[forecast.symbol] ?? null}
               onPress={() =>
                 navigation.navigate('CryptoDetail', { symbol: forecast.symbol })
               }
