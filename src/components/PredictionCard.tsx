@@ -52,6 +52,8 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
         <TouchableOpacity
           onPress={() => onDelete(prediction.id)}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete prediction: ${prediction.symbol} ${prediction.direction} ${formatPrice(prediction.targetPrice)}`}
         >
           <Icon source="delete-outline" size={20} color={colors.text3} />
         </TouchableOpacity>

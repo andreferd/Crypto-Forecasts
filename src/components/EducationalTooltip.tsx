@@ -55,7 +55,12 @@ export function EducationalTooltip() {
             a card to drill in or place a call.
           </Text>
         </View>
-        <TouchableOpacity onPress={dismiss} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <TouchableOpacity
+          onPress={dismiss}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss explainer"
+        >
           <Icon source="close" size={18} color={colors.text3} />
         </TouchableOpacity>
       </View>
