@@ -6,13 +6,7 @@ import { colors, spacing, radii, typography } from '../theme';
 import { usePredictions } from '../hooks/usePredictions';
 import { NewPredictionForm } from '../components/NewPredictionForm';
 import { PredictionCard } from '../components/PredictionCard';
-
-function localDateKey(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+import { computeDailyStreak } from '../utils/streak';
 
 function formatLockedPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -45,31 +39,10 @@ export function PredictionGameScreen() {
     return { total, correct, agreementRate: total > 0 ? Math.round((agrees / total) * 100) : 0 };
   }, [evaluations]);
 
-  // Streak: how many consecutive days (ending today) have at least one prediction.
-  const streak = useMemo(() => {
-    if (evaluations.length === 0) return 0;
-    const dates = new Set(
-      evaluations.map((e) => localDateKey(new Date(e.prediction.createdAt))),
-    );
-    let count = 0;
-    const cursor = new Date();
-    cursor.setHours(0, 0, 0, 0);
-    // Allow a 1-day grace if the most recent prediction was yesterday but not today.
-    let grace = !dates.has(localDateKey(cursor));
-    while (true) {
-      const key = localDateKey(cursor);
-      if (dates.has(key)) {
-        count++;
-        grace = false;
-      } else if (grace) {
-        grace = false; // skip today, count from yesterday
-      } else {
-        break;
-      }
-      cursor.setDate(cursor.getDate() - 1);
-    }
-    return count;
-  }, [evaluations]);
+  const streak = useMemo(
+    () => computeDailyStreak(evaluations.map((e) => e.prediction.createdAt)),
+    [evaluations],
+  );
 
   if (!loaded) {
     return (
