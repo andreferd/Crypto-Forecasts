@@ -152,6 +152,12 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
               width={TAPE_WIDTH}
               showAxis={false}
             />
+            <View style={styles.tapeReadout}>
+              <Text style={styles.tapeReadoutLabel}>Your price</Text>
+              <Text style={[styles.tapeReadoutValue, { color: brandColor }]}>
+                {target != null ? formatPrice(target) : '—'}
+              </Text>
+            </View>
             <PriceTape
               min={domain.min}
               max={domain.max}
@@ -161,6 +167,7 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
               width={TAPE_WIDTH}
               accentColor={brandColor}
             />
+            <Text style={styles.tapeHint}>‹ drag to set price ›</Text>
           </>
         )}
       </View>
@@ -277,6 +284,31 @@ const styles = StyleSheet.create({
     color: colors.text3,
     textAlign: 'center',
     paddingVertical: spacing.lg,
+  },
+  tapeReadout: {
+    alignItems: 'center',
+    marginTop: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  tapeReadoutLabel: {
+    ...typography.caption,
+    color: colors.text3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  tapeReadoutValue: {
+    ...typography.hero,
+    fontSize: 28,
+    lineHeight: 34,
+    ...typography.numeric,
+    marginTop: 2,
+  },
+  tapeHint: {
+    ...typography.caption,
+    color: colors.text3,
+    textAlign: 'center',
+    marginTop: spacing.xs,
+    letterSpacing: 0.4,
   },
   selectionPanel: {
     backgroundColor: colors.surface2,

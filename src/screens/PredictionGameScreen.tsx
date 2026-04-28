@@ -144,8 +144,9 @@ export function PredictionGameScreen() {
       duration={2400}
       style={styles.snackbar}
       wrapperStyle={{ bottom: 96 + insets.bottom }}
+      theme={{ colors: { inverseOnSurface: colors.text1, onSurface: colors.text1 } }}
     >
-      {lockedToast ?? ''}
+      <Text style={styles.snackbarText}>{lockedToast ?? ''}</Text>
     </Snackbar>
     </View>
   );
@@ -191,6 +192,10 @@ const styles = StyleSheet.create({
     borderColor: colors.accent,
     borderWidth: 1,
     borderRadius: radii.md,
+  },
+  snackbarText: {
+    ...typography.body,
+    color: colors.text1,
   },
   title: {
     ...typography.hero,
