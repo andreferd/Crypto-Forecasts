@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { ScrollView, View, StyleSheet } from 'react-native';
-import { Text, Icon } from 'react-native-paper';
+import { Text, Icon, Snackbar } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radii, typography } from '../theme';
 import { usePredictions } from '../hooks/usePredictions';
@@ -14,9 +14,24 @@ function localDateKey(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+function formatLockedPrice(v: number): string {
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+  return `$${Math.round(v)}`;
+}
+
 export function PredictionGameScreen() {
   const insets = useSafeAreaInsets();
   const { evaluations, loaded, makePrediction, deletePrediction } = usePredictions();
+  const [lockedToast, setLockedToast] = useState<string | null>(null);
+
+  const handleSubmit = useCallback(
+    (symbol: string, targetPrice: number, direction: 'above' | 'below') => {
+      makePrediction(symbol, targetPrice, direction);
+      setLockedToast(`Locked in: ${symbol} ${direction} ${formatLockedPrice(targetPrice)}`);
+    },
+    [makePrediction],
+  );
 
   const sortedEvals = useMemo(
     () => [...evaluations].sort((a, b) => b.prediction.createdAt - a.prediction.createdAt),
@@ -73,6 +88,7 @@ export function PredictionGameScreen() {
   }
 
   return (
+    <View style={styles.container}>
     <ScrollView
       style={styles.container}
       contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
@@ -91,7 +107,7 @@ export function PredictionGameScreen() {
         </View>
       )}
 
-      <NewPredictionForm onSubmit={makePrediction} />
+      <NewPredictionForm onSubmit={handleSubmit} />
 
       {sortedEvals.length > 0 ? (
         <View style={styles.listSection}>
@@ -122,6 +138,16 @@ export function PredictionGameScreen() {
         </Text>
       )}
     </ScrollView>
+    <Snackbar
+      visible={lockedToast != null}
+      onDismiss={() => setLockedToast(null)}
+      duration={2400}
+      style={styles.snackbar}
+      wrapperStyle={{ bottom: 96 + insets.bottom }}
+    >
+      {lockedToast ?? ''}
+    </Snackbar>
+    </View>
   );
 }
 
@@ -159,6 +185,12 @@ const styles = StyleSheet.create({
     height: 140,
     width: '100%',
     marginTop: spacing.md,
+  },
+  snackbar: {
+    backgroundColor: colors.surface2,
+    borderColor: colors.accent,
+    borderWidth: 1,
+    borderRadius: radii.md,
   },
   title: {
     ...typography.hero,
