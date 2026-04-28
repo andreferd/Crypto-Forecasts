@@ -42,3 +42,4 @@ android/
 *.tsbuildinfo
 
 app-example
+*.apk
