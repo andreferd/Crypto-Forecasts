@@ -25,7 +25,9 @@ const TICK_WIDTH = 8;
 function formatPriceShort(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
-  return `$${Math.round(v)}`;
+  if (v >= 1) return `$${Math.round(v)}`;
+  if (v >= 0.01) return `$${v.toFixed(2)}`;
+  return `$${v.toFixed(4)}`;
 }
 
 export function PriceTape({

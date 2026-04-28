@@ -27,6 +27,8 @@ const TYPE_LABELS: Record<ForecastType, { pill: string; arrow: string }> = {
   eoy: { pill: 'EoY', arrow: 'by EoY' },
   max: { pill: 'High', arrow: 'yearly high' },
   min: { pill: 'Low', arrow: 'yearly low' },
+  maxmon: { pill: 'High', arrow: 'monthly high' },
+  minmon: { pill: 'Low', arrow: 'monthly low' },
 };
 
 function formatPrice(v: number | null | undefined): string {

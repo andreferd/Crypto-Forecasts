@@ -24,6 +24,9 @@ export const palette = {
   btc: '#D9923F',
   eth: '#7B8AC4',
   sol: '#9B7CD1',
+  xrp: '#5FA8B0',
+  doge: '#C8B05E',
+  bnb: '#D6B874',
 
   overlay: 'rgba(0, 0, 0, 0.5)',
 } as const;
@@ -54,6 +57,9 @@ export const colors = {
   btc: palette.btc,
   eth: palette.eth,
   sol: palette.sol,
+  xrp: palette.xrp,
+  doge: palette.doge,
+  bnb: palette.bnb,
 
   overlay: palette.overlay,
 } as const;

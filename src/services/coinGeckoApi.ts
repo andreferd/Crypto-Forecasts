@@ -13,9 +13,6 @@ export const COINGECKO_IDS: Record<string, string> = {
   SOL: 'solana',
   XRP: 'ripple',
   DOGE: 'dogecoin',
-  AVAX: 'avalanche-2',
-  LINK: 'chainlink',
-  DOT: 'polkadot',
   BNB: 'binancecoin',
 };
 

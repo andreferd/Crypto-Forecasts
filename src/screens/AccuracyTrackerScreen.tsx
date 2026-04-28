@@ -5,8 +5,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { colors, spacing, typography } from '../theme';
 import { TrackRecordChart } from '../components/TrackRecordChart';
+import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
 
-const SYMBOLS = ['BTC', 'ETH', 'SOL'];
+const SYMBOLS = ALL_CRYPTO_KEYS;
 
 export function AccuracyTrackerScreen() {
   const insets = useSafeAreaInsets();

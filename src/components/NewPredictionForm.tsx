@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
+import { EOY_SYMBOLS } from '../constants/kalshi';
 import { useForecast } from '../hooks/useForecast';
 import { computeMarketProbForTarget } from '../utils/predictionScoring';
 import { DistributionCurve } from './DistributionCurve';
@@ -14,7 +15,8 @@ interface Props {
   initialSymbol?: string;
 }
 
-const SYMBOLS = ['BTC', 'ETH', 'SOL'];
+// Predict only operates on tokens with an EOY price-range series.
+const SYMBOLS = EOY_SYMBOLS;
 const TAPE_WIDTH = 300;
 
 function formatPrice(v: number): string {

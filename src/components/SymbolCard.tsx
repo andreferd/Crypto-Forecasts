@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Pressable, LayoutChangeEvent } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
@@ -14,6 +14,8 @@ const TYPE_LABELS: Record<ForecastType, { pill: string; arrow: string }> = {
   eoy: { pill: 'EoY', arrow: 'by EoY' },
   max: { pill: 'High', arrow: 'yearly high' },
   min: { pill: 'Low', arrow: 'yearly low' },
+  maxmon: { pill: 'High', arrow: 'monthly high' },
+  minmon: { pill: 'Low', arrow: 'monthly low' },
 };
 
 interface Props {
@@ -27,24 +29,46 @@ function formatPrice(v: number | null | undefined): string {
   if (v == null) return '—';
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
-  return `$${Math.round(v)}`;
+  if (v >= 1) return `$${Math.round(v)}`;
+  if (v >= 0.01) return `$${v.toFixed(2)}`;
+  return `$${v.toFixed(4)}`;
 }
 
 export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
   const [width, setWidth] = useState(320);
   const [selectedType, setSelectedType] = useState<ForecastType>('eoy');
+  const [userPicked, setUserPicked] = useState(false);
   const token = TOKENS[forecast.symbol];
   const brandColor = token?.color ?? colors.accent;
 
   // Available types in a stable display order
   const availableTypes = useMemo<ForecastType[]>(() => {
     const present = new Set(forecast.forecasts.map((f) => f.type));
-    return (['eoy', 'max', 'min'] as ForecastType[]).filter((t) => present.has(t));
+    return (['eoy', 'max', 'min', 'maxmon', 'minmon'] as ForecastType[]).filter((t) =>
+      present.has(t),
+    );
   }, [forecast.forecasts]);
+
+  // Until the user clicks a pill, always prefer 'eoy' if it's available; this
+  // avoids getting stuck on whichever series happened to load first when the
+  // EOY query is still pending.
+  useEffect(() => {
+    if (userPicked) return;
+    if (availableTypes.length === 0) return;
+    const preferred: ForecastType = availableTypes.includes('eoy')
+      ? 'eoy'
+      : availableTypes[0];
+    if (preferred !== selectedType) setSelectedType(preferred);
+  }, [availableTypes, selectedType, userPicked]);
+
+  const handlePickType = (t: ForecastType) => {
+    setUserPicked(true);
+    setSelectedType(t);
+  };
 
   const active =
     forecast.forecasts.find((f) => f.type === selectedType) ??
-    forecast.forecasts.find((f) => f.type === 'eoy');
+    forecast.forecasts.find((f) => f.type === availableTypes[0]);
   const best = active?.mostLikelyBracket;
 
   const confidence = useMemo(
@@ -84,7 +108,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
     );
   }
 
-  const labels = TYPE_LABELS[selectedType];
+  const labels = TYPE_LABELS[active.type];
 
   const trendColor =
     trend?.direction === 'up'
@@ -135,7 +159,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
               return (
                 <Pressable
                   key={t}
-                  onPress={() => setSelectedType(t)}
+                  onPress={() => handlePickType(t)}
                   hitSlop={10}
                   style={({ pressed }) => [
                     styles.pill,
@@ -165,7 +189,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
           <DistributionCurve
             brackets={active.brackets}
             accentColor={brandColor}
-            spotPrice={selectedType === 'eoy' ? (spotPrice ?? null) : null}
+            spotPrice={active.type === 'eoy' ? (spotPrice ?? null) : null}
             height={104}
             width={width - spacing.lg * 2}
           />

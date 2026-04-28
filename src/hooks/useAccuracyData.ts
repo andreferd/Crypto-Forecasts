@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AccuracyLog, AccuracyMetrics, WeeklyReportCard } from '../types/storage';
 import { getAccuracyLog } from '../services/storageService';
 import { computeAccuracyMetrics, computeWeeklyReports } from '../utils/accuracyAnalytics';
+import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
 
-const SYMBOLS = ['BTC', 'ETH', 'SOL'];
+const SYMBOLS = ALL_CRYPTO_KEYS;
 
 export function useAccuracyData() {
   const [log, setLog] = useState<AccuracyLog>({ entries: [] });
