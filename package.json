@@ -9,7 +9,8 @@
     "web": "expo start --web",
     "build": "npx eas build --profile development --platform android",
     "build:local": "npx eas build --profile development --platform android --local",
-    "test": "TZ=UTC jest"
+    "test": "TZ=UTC jest",
+    "postinstall": "bash scripts/subset-mci-font.sh"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",
