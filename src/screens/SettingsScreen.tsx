@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ScrollView, View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { Text, Icon } from 'react-native-paper';
+import { ScrollView, View, StyleSheet, Alert, Linking, TouchableOpacity } from 'react-native';
+import { Text, Icon, Switch } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
@@ -123,14 +123,12 @@ export function SettingsScreen() {
           <Text style={styles.rowLabel}>
             Push me when a bracket moves {settings.thresholdPercent}%+
           </Text>
-          <TouchableOpacity
-            style={[styles.toggle, settings.enabled && styles.toggleOn]}
-            onPress={toggleEnabled}
-          >
-            <Text style={[styles.toggleText, settings.enabled && styles.toggleTextOn]}>
-              {settings.enabled ? 'ON' : 'OFF'}
-            </Text>
-          </TouchableOpacity>
+          <Switch
+            value={settings.enabled}
+            onValueChange={toggleEnabled}
+            color={colors.accent}
+            accessibilityLabel="Toggle shift alerts"
+          />
         </View>
         {settings.enabled && (
           <View style={styles.thresholdRow}>
@@ -175,6 +173,16 @@ export function SettingsScreen() {
                 : colors.text2
           }
         />
+        {notifStatus !== 'granted' && settings.enabled && (
+          <TouchableOpacity
+            style={styles.linkRow}
+            onPress={() => Linking.openSettings()}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.linkText}>Open system settings</Text>
+            <Icon source="chevron-right" size={18} color={colors.accent} />
+          </TouchableOpacity>
+        )}
       </Section>
 
       <Section title="Data">
@@ -263,23 +271,17 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text2,
   },
-  toggle: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs + 2,
-    borderRadius: radii.sm,
-    backgroundColor: colors.surface2,
-    borderWidth: 1,
-    borderColor: colors.border,
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  toggleOn: {
-    backgroundColor: colors.accent + '22',
-    borderColor: colors.accent,
-  },
-  toggleText: {
-    ...typography.captionStrong,
-    color: colors.text3,
-  },
-  toggleTextOn: {
+  linkText: {
+    ...typography.body,
     color: colors.accent,
   },
   thresholdRow: {
