@@ -110,7 +110,7 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
   if (isError || !active) {
     return (
       <View style={[styles.container, styles.center]}>
-        <Text style={styles.errorText}>Unable to load forecast data for {symbol}</Text>
+        <Text style={styles.errorText}>Unable to load consensus data for {symbol}</Text>
       </View>
     );
   }
@@ -214,7 +214,7 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
       {/* History section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Forecast history</Text>
+          <Text style={styles.sectionTitle}>Consensus history</Text>
           {dataUpdatedAt > 0 && <DataFreshnessIndicator dataUpdatedAt={dataUpdatedAt} />}
         </View>
         <View style={styles.timePeriodRow}>

@@ -13,7 +13,7 @@ export function generateShareText(
   forecasts: ForecastSeries[],
   spotPrice?: number | null,
 ): string {
-  const lines: string[] = [`${symbol} (${name}) Forecast`];
+  const lines: string[] = [`${symbol} (${name}) — market consensus`];
 
   if (spotPrice != null) {
     lines.push(`Current Price: ${formatPrice(spotPrice)}`);
@@ -33,7 +33,7 @@ export function generateShareText(
 
   lines.push('');
   lines.push('Data from Kalshi prediction markets');
-  lines.push('via Crypto Forecasts app');
+  lines.push('via Crowd Price');
 
   return lines.join('\n');
 }
@@ -45,5 +45,5 @@ export async function shareForcast(
   spotPrice?: number | null,
 ): Promise<void> {
   const message = generateShareText(symbol, name, forecasts, spotPrice);
-  await Share.share({ message, title: `${symbol} Forecast` });
+  await Share.share({ message, title: `${symbol} consensus` });
 }

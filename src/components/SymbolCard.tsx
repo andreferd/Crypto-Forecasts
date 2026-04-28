@@ -103,7 +103,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
           glyph={token?.icon ?? '?'}
           name={token?.name ?? forecast.symbol}
         />
-        <Text style={styles.placeholder}>Forecast unavailable</Text>
+        <Text style={styles.placeholder}>Consensus unavailable</Text>
       </View>
     );
   }

@@ -43,10 +43,10 @@ export function generateMarketSummary(
   brackets: PriceBracket[],
   spotPrice?: number | null,
 ): string {
-  if (brackets.length === 0) return `No forecast data available for ${symbol}.`;
+  if (brackets.length === 0) return `No consensus data available for ${symbol}.`;
 
   const total = brackets.reduce((s, b) => s + b.probability, 0);
-  if (total === 0) return `No forecast data available for ${symbol}.`;
+  if (total === 0) return `No consensus data available for ${symbol}.`;
 
   // Find the most likely bracket
   const best = brackets.reduce((a, b) => (b.probability > a.probability ? b : a));

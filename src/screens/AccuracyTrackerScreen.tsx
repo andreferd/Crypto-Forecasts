@@ -5,9 +5,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { colors, spacing, typography } from '../theme';
 import { TrackRecordChart } from '../components/TrackRecordChart';
-import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
+import { EOY_SYMBOLS } from '../constants/kalshi';
 
-const SYMBOLS = ALL_CRYPTO_KEYS;
+// Track shows forecast-vs-spot history against the year-end series; tokens
+// without an EOY series have no relevant history to render here.
+const SYMBOLS = EOY_SYMBOLS;
 
 export function AccuracyTrackerScreen() {
   const insets = useSafeAreaInsets();
@@ -39,7 +41,7 @@ export function AccuracyTrackerScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Track record</Text>
         <Text style={styles.subtitle}>
-          Year-end forecast vs. actual spot price over the past 90 days. Closer
+          Year-end consensus vs. actual spot price over the past 90 days. Closer
           lines = sharper market.
         </Text>
       </View>

@@ -24,7 +24,7 @@ export function Header({ dataUpdatedAt }: Props) {
     <View style={styles.container}>
       <View style={styles.left}>
         <View style={styles.titleRow}>
-          <Text style={styles.title}>Crypto Forecasts</Text>
+          <Text style={styles.title}>Crowd Price</Text>
           <View style={styles.betaBadge}>
             <Text style={styles.betaText}>BETA</Text>
           </View>

@@ -67,7 +67,7 @@ export function TrackRecordChart({ symbol, days = 90 }: Props) {
           <View style={[styles.skeletonLine, { backgroundColor: spotColor + '22', top: '60%' }]} />
         </View>
         <View style={styles.legend}>
-          <LegendDot color={forecastColor} label="Forecast" dashed />
+          <LegendDot color={forecastColor} label="Consensus" dashed />
           <LegendDot color={spotColor} label="Spot" />
         </View>
       </View>
@@ -84,7 +84,7 @@ export function TrackRecordChart({ symbol, days = 90 }: Props) {
           </View>
           <Text style={styles.emptyTitle}>No history yet</Text>
           <Text style={styles.emptyText}>
-            We'll plot the year-end forecast against spot once we have enough trades.
+            We'll plot the year-end consensus against spot once we have enough trades.
           </Text>
         </View>
       </View>
@@ -157,7 +157,7 @@ export function TrackRecordChart({ symbol, days = 90 }: Props) {
       </View>
 
       <View style={styles.legend}>
-        <LegendDot color={forecastColor} label="Forecast" dashed />
+        <LegendDot color={forecastColor} label="Consensus" dashed />
         <LegendDot color={spotColor} label="Spot" />
         <View style={{ flex: 1 }} />
         <Text style={styles.errorText}>

@@ -2,9 +2,11 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { AccuracyLog, AccuracyMetrics, WeeklyReportCard } from '../types/storage';
 import { getAccuracyLog } from '../services/storageService';
 import { computeAccuracyMetrics, computeWeeklyReports } from '../utils/accuracyAnalytics';
-import { ALL_CRYPTO_KEYS } from '../constants/kalshi';
+import { EOY_SYMBOLS } from '../constants/kalshi';
 
-const SYMBOLS = ALL_CRYPTO_KEYS;
+// Accuracy metrics are computed against EOY forecasts; tokens without an EOY
+// series wouldn't produce meaningful entries.
+const SYMBOLS = EOY_SYMBOLS;
 
 export function useAccuracyData() {
   const [log, setLog] = useState<AccuracyLog>({ entries: [] });

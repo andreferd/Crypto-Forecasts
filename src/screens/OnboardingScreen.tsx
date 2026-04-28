@@ -40,7 +40,7 @@ export function OnboardingScreen() {
           <Bar h={48} />
           <Bar h={28} />
         </View>
-        <Text style={styles.brandName}>Crypto Forecasts</Text>
+        <Text style={styles.brandName}>Crowd Price</Text>
       </View>
 
       <Text style={styles.title}>How familiar are you with{'\n'}prediction markets?</Text>
@@ -56,7 +56,7 @@ export function OnboardingScreen() {
           onPress={() => pick('newbie')}
         />
         <Choice
-          label="I know forecasts"
+          label="I know prediction markets"
           description="Skip the explainers — straight to the data."
           glyph={<AdvancedGlyph />}
           onPress={() => pick('advanced')}

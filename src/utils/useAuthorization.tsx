@@ -97,8 +97,8 @@ async function persistAuthorization(
 }
 
 export const APP_IDENTITY = {
-  name: "Crypto Forecasts",
-  uri: "https://cryptoforecasts.app",
+  name: "Crowd Price",
+  uri: "https://crypto-forecasts.vercel.app",
 };
 
 export function useAuthorization() {

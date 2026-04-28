@@ -205,7 +205,7 @@ describe('computeTrend', () => {
 
 describe('generateMarketSummary', () => {
   it('reports "no data" for empty brackets', () => {
-    expect(generateMarketSummary('BTC', [])).toMatch(/No forecast data/);
+    expect(generateMarketSummary('BTC', [])).toMatch(/No consensus data/);
   });
 
   it('reports "no data" when total probability is 0', () => {
@@ -213,7 +213,7 @@ describe('generateMarketSummary', () => {
       generateMarketSummary('BTC', [
         bracket({ probability: 0, floorStrike: 0, capStrike: 100 }),
       ]),
-    ).toMatch(/No forecast data/);
+    ).toMatch(/No consensus data/);
   });
 
   it('includes the best bracket percentage and display range', () => {

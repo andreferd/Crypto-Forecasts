@@ -214,6 +214,10 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.85}>
             <Text style={styles.submitText}>Lock in</Text>
           </TouchableOpacity>
+
+          <Text style={styles.disclaimer}>
+            Local only · no money at stake · not financial advice
+          </Text>
         </View>
       ) : null}
     </View>
@@ -387,5 +391,14 @@ const styles = StyleSheet.create({
     ...typography.bodyLg,
     fontFamily: typography.bodyStrong.fontFamily,
     color: colors.onAccent,
+  },
+  disclaimer: {
+    ...typography.caption,
+    fontSize: 10,
+    lineHeight: 13,
+    color: colors.text3,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    fontStyle: 'italic',
   },
 });

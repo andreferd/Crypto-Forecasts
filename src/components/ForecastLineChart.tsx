@@ -161,7 +161,7 @@ export function ForecastLineChart({
               : formatPrice(currentValue)}
           </Text>
           <Text style={styles.forecastLabel}>
-            {activePoint ? formatDate(activePoint.timestamp) : 'forecast'}
+            {activePoint ? formatDate(activePoint.timestamp) : 'consensus'}
           </Text>
         </View>
         {!activePoint && (

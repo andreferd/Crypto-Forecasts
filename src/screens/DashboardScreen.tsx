@@ -39,7 +39,7 @@ function buildHeadline(
   if (parts.length === 0) {
     return {
       title: 'Markets are warming up',
-      subtitle: 'Forecast data will land shortly.',
+      subtitle: 'Market consensus will land shortly.',
     };
   }
 
