@@ -1,7 +1,8 @@
-import React from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useQueryClient } from '@tanstack/react-query';
 import { colors, spacing, typography } from '../theme';
 import { TrackRecordChart } from '../components/TrackRecordChart';
 
@@ -9,11 +10,30 @@ const SYMBOLS = ['BTC', 'ETH', 'SOL'];
 
 export function AccuracyTrackerScreen() {
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['forecast-history'] }),
+      queryClient.invalidateQueries({ queryKey: ['spot-history'] }),
+    ]);
+    setRefreshing(false);
+  }, [queryClient]);
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={[styles.content, { paddingBottom: 96 + insets.bottom }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accent}
+          colors={[colors.accent]}
+        />
+      }
     >
       <View style={styles.header}>
         <Text style={styles.title}>Track record</Text>

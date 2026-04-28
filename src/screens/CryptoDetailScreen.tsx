@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { ScrollView, View, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
+import React, { useCallback, useState, useMemo } from 'react';
+import { ScrollView, View, StyleSheet, Pressable, RefreshControl, useWindowDimensions } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
+import { useQueryClient } from '@tanstack/react-query';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { colors, spacing, radii, typography } from '../theme';
@@ -56,6 +57,18 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
     () => (forecastHistory ? computeTrend(forecastHistory) : null),
     [forecastHistory],
   );
+
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['kalshi-markets'] }),
+      queryClient.invalidateQueries({ queryKey: ['forecast-history'] }),
+      queryClient.invalidateQueries({ queryKey: ['spot-prices'] }),
+    ]);
+    setRefreshing(false);
+  }, [queryClient]);
 
   const availableTypes = useMemo<ForecastType[]>(() => {
     const present = new Set(forecasts.map((f) => f.type));
@@ -115,6 +128,14 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
     <ScrollView
       style={styles.container}
       contentContainerStyle={[styles.content, { paddingBottom: 80 + insets.bottom }]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accent}
+          colors={[colors.accent]}
+        />
+      }
     >
       {/* Snapshot section */}
       <View style={styles.section}>
