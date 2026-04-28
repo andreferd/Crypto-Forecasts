@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Pressable } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
 import { useForecast } from '../hooks/useForecast';
 import { computeMarketProbForTarget } from '../utils/predictionScoring';
 import { DistributionCurve } from './DistributionCurve';
+import { PriceTape } from './PriceTape';
 import { PriceBracket } from '../types/market';
 
 interface Props {
@@ -14,15 +15,7 @@ interface Props {
 }
 
 const SYMBOLS = ['BTC', 'ETH', 'SOL'];
-
-function bracketMidpoint(b: PriceBracket): number {
-  if (b.floorStrike != null && b.capStrike != null) {
-    return (b.floorStrike + b.capStrike) / 2;
-  }
-  if (b.floorStrike != null) return b.floorStrike * 1.1;
-  if (b.capStrike != null) return b.capStrike * 0.9;
-  return 0;
-}
+const TAPE_WIDTH = 300;
 
 function formatPrice(v: number): string {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
@@ -30,31 +23,82 @@ function formatPrice(v: number): string {
   return `$${Math.round(v).toLocaleString()}`;
 }
 
+function bracketMidpoint(b: PriceBracket): number {
+  if (b.floorStrike != null && b.capStrike != null) return (b.floorStrike + b.capStrike) / 2;
+  if (b.floorStrike != null) return b.floorStrike * 1.1;
+  if (b.capStrike != null) return b.capStrike * 0.9;
+  return 0;
+}
+
+function pickStep(span: number): number {
+  // Aim for ~150–250 ticks across the domain.
+  if (span >= 100_000) return 1000;
+  if (span >= 10_000) return 500;
+  if (span >= 1_000) return 50;
+  if (span >= 100) return 10;
+  return 1;
+}
+
+function findBracket(brackets: PriceBracket[], price: number): PriceBracket | null {
+  for (const b of brackets) {
+    const floor = b.floorStrike ?? -Infinity;
+    const cap = b.capStrike ?? Infinity;
+    if (price >= floor && price <= cap) return b;
+  }
+  return null;
+}
+
 export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
   const [symbol, setSymbol] = useState(initialSymbol ?? 'BTC');
-  const [selected, setSelected] = useState<PriceBracket | null>(null);
+  const [target, setTarget] = useState<number | null>(null);
   const [direction, setDirection] = useState<'above' | 'below'>('above');
 
   const forecast = useForecast(symbol);
   const eoy = forecast.forecasts.find((f) => f.type === 'eoy');
   const brackets = eoy?.brackets ?? [];
 
-  // Reset selection when symbol changes
-  React.useEffect(() => {
-    setSelected(null);
-  }, [symbol]);
+  const domain = useMemo(() => {
+    const sided = brackets.filter((b) => b.floorStrike != null || b.capStrike != null);
+    if (sided.length === 0) return null;
+    const floors = sided.map((b) => b.floorStrike ?? b.capStrike! * 0.9);
+    const caps = sided.map((b) => b.capStrike ?? b.floorStrike! * 1.1);
+    const min = Math.min(...floors);
+    const max = Math.max(...caps);
+    const step = pickStep(max - min);
+    // Round min/max down/up to step boundary so ticks align cleanly.
+    const minSnap = Math.floor(min / step) * step;
+    const maxSnap = Math.ceil(max / step) * step;
+    return { min: minSnap, max: maxSnap, step };
+  }, [brackets]);
 
-  const target = selected ? bracketMidpoint(selected) : null;
+  // Default target = most-likely bracket midpoint, snapped to step
+  useEffect(() => {
+    if (!domain || brackets.length === 0) return;
+    if (target != null && target >= domain.min && target <= domain.max) return;
+    const mostLikely = eoy?.mostLikelyBracket;
+    const seed = mostLikely ? bracketMidpoint(mostLikely) : (domain.min + domain.max) / 2;
+    const snapped = Math.round(seed / domain.step) * domain.step;
+    setTarget(snapped);
+  }, [domain, brackets, eoy, target]);
+
+  // Reset when symbol changes
+  useEffect(() => {
+    setTarget(null);
+  }, [symbol]);
 
   const liveProb = useMemo(() => {
     if (target == null || brackets.length === 0) return null;
     return computeMarketProbForTarget(brackets, target, direction);
   }, [brackets, target, direction]);
 
+  const snappedBracket = useMemo(() => {
+    if (target == null) return null;
+    return findBracket(brackets, target);
+  }, [brackets, target]);
+
   const handleSubmit = () => {
     if (target == null) return;
     onSubmit(symbol, target, direction);
-    setSelected(null);
   };
 
   const brandColor = TOKENS[symbol]?.color ?? colors.accent;
@@ -63,7 +107,7 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
     <View style={styles.card}>
       <Text style={styles.title}>Make a call</Text>
       <Text style={styles.subtitle}>
-        Tap a price range below — that's your bet for end of year.
+        Scroll the tape to set your end-of-year price.
       </Text>
 
       <View style={styles.symbolRow}>
@@ -97,7 +141,7 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
       </View>
 
       <View style={styles.chartWrap}>
-        {brackets.length === 0 ? (
+        {brackets.length === 0 || !domain ? (
           <Text style={styles.empty}>Loading {symbol} brackets…</Text>
         ) : (
           <>
@@ -105,53 +149,36 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
               brackets={brackets}
               accentColor={brandColor}
               height={120}
-              width={300}
-              showAxis
+              width={TAPE_WIDTH}
+              showAxis={false}
             />
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.bracketRow}
-            >
-              {brackets
-                .filter((b) => b.floorStrike != null || b.capStrike != null)
-                .map((b) => {
-                  const isActive = selected?.ticker === b.ticker;
-                  return (
-                    <Pressable
-                      key={b.ticker}
-                      onPress={() => setSelected(b)}
-                      style={({ pressed }) => [
-                        styles.bracketPill,
-                        isActive && {
-                          borderColor: brandColor,
-                          backgroundColor: brandColor + '1A',
-                        },
-                        pressed && { opacity: 0.7 },
-                      ]}
-                    >
-                      <Text style={[styles.bracketRange, isActive && { color: colors.text1 }]}>
-                        {b.displayRange}
-                      </Text>
-                      <Text style={[styles.bracketProb, isActive && { color: brandColor }]}>
-                        {b.probability}%
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-            </ScrollView>
+            <PriceTape
+              min={domain.min}
+              max={domain.max}
+              step={domain.step}
+              value={target ?? domain.min}
+              onChange={setTarget}
+              width={TAPE_WIDTH}
+              accentColor={brandColor}
+            />
           </>
         )}
       </View>
 
-      {selected ? (
+      {target != null && domain ? (
         <View style={styles.selectionPanel}>
           <View style={styles.selectionLine}>
             <Text style={styles.selectionLabel}>Your call</Text>
             <Text style={styles.selectionValue}>
-              {symbol} {direction} {formatPrice(target ?? 0)}
+              {symbol} {direction} {formatPrice(target)}
             </Text>
           </View>
+
+          {snappedBracket && (
+            <Text style={styles.snapHint}>
+              Sits in the {snappedBracket.displayRange} bracket · market {snappedBracket.probability}%
+            </Text>
+          )}
 
           <View style={styles.directionRow}>
             <DirectionBtn label="Above" active={direction === 'above'} onPress={() => setDirection('above')} />
@@ -245,33 +272,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     alignItems: 'center',
   },
-  bracketRow: {
-    gap: spacing.xs,
-    paddingTop: spacing.sm,
-    paddingLeft: spacing.xs,
-    paddingRight: spacing.lg,
-  },
-  bracketPill: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface2,
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 6,
-  },
-  bracketRange: {
-    ...typography.caption,
-    color: colors.text2,
-    ...typography.numeric,
-  },
-  bracketProb: {
-    ...typography.microStrong,
-    color: colors.text3,
-    ...typography.numeric,
-  },
   empty: {
     ...typography.body,
     color: colors.text3,
@@ -299,6 +299,10 @@ const styles = StyleSheet.create({
     ...typography.bodyStrong,
     ...typography.numeric,
     color: colors.text1,
+  },
+  snapHint: {
+    ...typography.caption,
+    color: colors.text3,
   },
   directionRow: {
     flexDirection: 'row',
