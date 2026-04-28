@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact — Crowd Price</title>
+  <meta name="description" content="Get in touch with the Crowd Price author." />
+  <meta name="theme-color" content="#0E0F11" />
+  <link rel="icon" type="image/png" href="/assets/app-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            bg: '#0E0F11', surface: '#16181C', surface2: '#1E2126', border: '#272A30',
+            text1: '#ECECEE', text2: '#A6A8AD', text3: '#878A91', accent: '#8AB4F8',
+          },
+        },
+      },
+    }
+  </script>
+  <style> body { background: #0E0F11; } </style>
+</head>
+<body class="font-sans text-text1 antialiased">
+  <nav class="sticky top-0 z-30 backdrop-blur-md bg-bg/80 border-b border-border">
+    <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <img src="/assets/app-icon.png" alt="Crowd Price" class="w-7 h-7 rounded-md" />
+        <span class="font-semibold tracking-tight">Crowd Price</span>
+      </a>
+      <a href="/" class="text-sm text-text2 hover:text-text1 transition">← Back</a>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+    <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-3">Contact</p>
+    <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-3">Get in touch</h1>
+    <p class="text-text2 mb-10">For early-access builds, feedback, bug reports, or press.</p>
+
+    <div class="bg-surface border border-border rounded-xl p-8 space-y-4">
+      <div>
+        <p class="text-xs uppercase tracking-wider text-text3 mb-2">Email</p>
+        <a href="mailto:kunandreww@gmail.com" class="text-xl text-accent hover:underline font-medium">kunandreww@gmail.com</a>
+      </div>
+      <div class="border-t border-border pt-4">
+        <p class="text-xs uppercase tracking-wider text-text3 mb-2">GitHub</p>
+        <a href="https://github.com/andreferd/Crypto-Forecasts" class="text-text1 hover:text-accent transition">github.com/andreferd/Crypto-Forecasts</a>
+      </div>
+      <div class="border-t border-border pt-4">
+        <p class="text-xs uppercase tracking-wider text-text3 mb-2">Author</p>
+        <p class="text-text1">Andrei Kunitski</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="border-t border-border mt-12">
+    <div class="max-w-3xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-text3">
+      <span>© 2026 Andrei Kunitski</span>
+      <div class="flex items-center gap-4">
+        <a href="/privacy" class="hover:text-text1">Privacy</a>
+        <a href="/terms" class="hover:text-text1">Terms</a>
+        <a href="/copyright" class="hover:text-text1">Copyright</a>
+        <a href="/contact" class="hover:text-text1">Contact</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

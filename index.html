@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Crypto Forecasts — Read what the market actually believes</title>
+  <title>Crowd Price — Read what the market actually believes</title>
   <meta name="description" content="A Solana-mobile app that turns Kalshi prediction-market data into a probability lens on crypto. See the market's full belief distribution for BTC, ETH, and SOL — and place your own calls against the consensus." />
-  <meta property="og:title" content="Crypto Forecasts — Read what the market actually believes" />
-  <meta property="og:description" content="Probability over price. A mobile probability lens on crypto, powered by Kalshi prediction markets." />
+  <meta property="og:title" content="Crowd Price — Read what the market actually believes" />
+  <meta property="og:description" content="Crypto price consensus, not predictions. A mobile probability lens powered by Kalshi prediction markets." />
   <meta property="og:image" content="/assets/screen-predict.png" />
   <meta name="theme-color" content="#0E0F11" />
   <link rel="icon" type="image/png" href="/assets/app-icon.png" />
@@ -71,8 +71,8 @@
   <nav class="sticky top-0 z-30 backdrop-blur-md bg-bg/80 border-b border-border">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
       <a href="#" class="flex items-center gap-2.5">
-        <img src="/assets/app-icon.png" alt="Crypto Forecasts" class="w-7 h-7 rounded-md" />
-        <span class="font-semibold tracking-tight">Crypto Forecasts</span>
+        <img src="/assets/app-icon.png" alt="Crowd Price" class="w-7 h-7 rounded-md" />
+        <span class="font-semibold tracking-tight">Crowd Price</span>
         <span class="text-xs text-text3 px-1.5 py-0.5 rounded border border-border ml-1">BETA</span>
       </a>
       <div class="flex items-center gap-3">
@@ -101,7 +101,7 @@
             Read what the<br/>market<span class="text-accent"> actually</span><br/>believes.
           </h1>
           <p class="mt-6 text-lg sm:text-xl text-text2 max-w-xl leading-relaxed">
-            Crypto Forecasts turns live <span class="text-text1 font-medium">Kalshi prediction-market data</span> into a probability lens on six cryptos — BTC, ETH, SOL, XRP, DOGE, BNB — and lets you place calls against the consensus.
+            Crowd Price turns live <span class="text-text1 font-medium">Kalshi prediction-market data</span> into a probability lens on six cryptos — BTC, ETH, SOL, XRP, DOGE, BNB — and lets you place calls against the consensus.
           </p>
           <div class="mt-8 flex flex-wrap items-center gap-3">
             <span class="bg-surface2 border border-accent/40 text-text1 font-semibold px-5 py-3 rounded-md flex items-center gap-2.5">
@@ -182,7 +182,7 @@
         </div>
         <h3 class="text-lg font-semibold mb-2">Track the market</h3>
         <p class="text-text2 leading-relaxed">
-          Each call is continuously scored against the live consensus and current spot. Push alerts when brackets shift. A 90-day forecast-vs-spot history shows how sharp the market actually is.
+          Each call is continuously scored against the live consensus and current spot. Push alerts when brackets shift. A 90-day consensus-vs-spot history shows how sharp the market actually is.
         </p>
       </div>
     </div>
@@ -205,15 +205,15 @@
         </div>
         <div class="space-y-3">
           <div class="phone-frame">
-            <img src="/assets/screen-detail.png" alt="Market detail with forecast history" />
+            <img src="/assets/screen-detail.png" alt="Market detail with consensus history" />
           </div>
-          <p class="text-center text-sm text-text2">Drill-in — most-likely bracket + 90-day forecast history</p>
+          <p class="text-center text-sm text-text2">Drill-in — most-likely bracket + 90-day consensus history</p>
         </div>
         <div class="space-y-3">
           <div class="phone-frame">
             <img src="/assets/screen-track.png" alt="Track record" />
           </div>
-          <p class="text-center text-sm text-text2">Track — forecast vs actual spot, scored daily</p>
+          <p class="text-center text-sm text-text2">Track — consensus vs actual spot, scored daily</p>
         </div>
         <div class="space-y-3">
           <div class="phone-frame">
@@ -248,7 +248,7 @@
     <div class="max-w-3xl mx-auto px-6 py-20 sm:py-28 text-center">
       <h2 class="text-4xl sm:text-5xl font-bold tracking-tight">Coming to the Solana dApp&nbsp;Store.</h2>
       <p class="mt-5 text-lg text-text2 leading-relaxed">
-        Crypto Forecasts is being prepped for distribution on the Solana Mobile dApp Store, the on-device store on Seeker. One-tap install, no sideloading required.
+        Crowd Price is being prepped for distribution on the Solana Mobile dApp Store, the on-device store on Seeker. One-tap install, no sideloading required.
       </p>
       <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
         <span class="bg-surface2 border border-accent/40 text-text1 font-semibold px-6 py-3.5 rounded-md flex items-center gap-2.5">
@@ -265,9 +265,17 @@
     <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2.5">
         <img src="/assets/app-icon.png" alt="" class="w-6 h-6 rounded" />
-        <span class="text-sm text-text2">Crypto Forecasts · A calibration game, not a trading product.</span>
+        <span class="text-sm text-text2">Crowd Price · A calibration game, not a trading product.</span>
       </div>
-      <p class="text-xs text-text3">Data: Kalshi · CoinGecko. Informational only.</p>
+      <div class="flex items-center gap-5 text-sm text-text3">
+        <a href="/privacy" class="hover:text-text1 transition">Privacy</a>
+        <a href="/terms" class="hover:text-text1 transition">Terms</a>
+        <a href="/copyright" class="hover:text-text1 transition">Copyright</a>
+        <a href="/contact" class="hover:text-text1 transition">Contact</a>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto px-6 pb-8 -mt-4 text-center sm:text-right">
+      <p class="text-xs text-text3">Data: Kalshi · CoinGecko · Informational only · Not financial advice</p>
     </div>
   </footer>
 </body>

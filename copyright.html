@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Copyright — Crowd Price</title>
+  <meta name="description" content="Copyright notice for Crowd Price." />
+  <meta name="theme-color" content="#0E0F11" />
+  <link rel="icon" type="image/png" href="/assets/app-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          colors: {
+            bg: '#0E0F11', surface: '#16181C', surface2: '#1E2126', border: '#272A30',
+            text1: '#ECECEE', text2: '#A6A8AD', text3: '#878A91', accent: '#8AB4F8',
+          },
+        },
+      },
+    }
+  </script>
+  <style> body { background: #0E0F11; } </style>
+</head>
+<body class="font-sans text-text1 antialiased">
+  <nav class="sticky top-0 z-30 backdrop-blur-md bg-bg/80 border-b border-border">
+    <div class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <img src="/assets/app-icon.png" alt="Crowd Price" class="w-7 h-7 rounded-md" />
+        <span class="font-semibold tracking-tight">Crowd Price</span>
+      </a>
+      <a href="/" class="text-sm text-text2 hover:text-text1 transition">← Back</a>
+    </div>
+  </nav>
+
+  <main class="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+    <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-3">Legal</p>
+    <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-10">Copyright</h1>
+
+    <div class="space-y-6 text-text2 leading-relaxed">
+      <p>
+        © 2026 Andrei Kunitski. All rights reserved.
+      </p>
+      <p>
+        The Crowd Price app, including its design, source code, and content, is the
+        intellectual property of the author. Kalshi and CoinGecko data are used
+        under their respective public API terms.
+      </p>
+      <p>
+        Inquiries:
+        <a href="mailto:kunandreww@gmail.com" class="text-accent hover:underline">kunandreww@gmail.com</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="border-t border-border mt-12">
+    <div class="max-w-3xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-text3">
+      <span>© 2026 Andrei Kunitski</span>
+      <div class="flex items-center gap-4">
+        <a href="/privacy" class="hover:text-text1">Privacy</a>
+        <a href="/terms" class="hover:text-text1">Terms</a>
+        <a href="/copyright" class="hover:text-text1">Copyright</a>
+        <a href="/contact" class="hover:text-text1">Contact</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
