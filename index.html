@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Crypto Forecasts — Read what the market actually believes</title>
+  <meta name="description" content="A Solana-mobile app that turns Kalshi prediction-market data into a probability lens on crypto. See the market's full belief distribution for BTC, ETH, and SOL — and place your own calls against the consensus." />
+  <meta property="og:title" content="Crypto Forecasts — Read what the market actually believes" />
+  <meta property="og:description" content="Probability over price. A mobile probability lens on crypto, powered by Kalshi prediction markets." />
+  <meta property="og:image" content="/assets/screen-predict.png" />
+  <meta name="theme-color" content="#0E0F11" />
+  <link rel="icon" type="image/png" href="/assets/app-icon.png" />
+  <link rel="apple-touch-icon" href="/assets/app-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          colors: {
+            bg: '#0E0F11',
+            surface: '#16181C',
+            surface2: '#1E2126',
+            border: '#272A30',
+            text1: '#ECECEE',
+            text2: '#A6A8AD',
+            text3: '#878A91',
+            accent: '#8AB4F8',
+            up: '#6FBF8A',
+            down: '#E07A7A',
+            warning: '#E5B472',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body { background: #0E0F11; }
+    .hero-glow {
+      background: radial-gradient(ellipse 800px 500px at 50% 0%, rgba(138, 180, 248, 0.18), transparent 70%);
+    }
+    .phone-frame {
+      border: 1px solid #272A30;
+      border-radius: 36px;
+      padding: 6px;
+      background: linear-gradient(180deg, #1E2126 0%, #16181C 100%);
+      box-shadow: 0 30px 80px -30px rgba(0,0,0,0.6), 0 0 0 1px rgba(138, 180, 248, 0.06);
+    }
+    .phone-frame img {
+      border-radius: 30px;
+      display: block;
+      width: 100%;
+    }
+    .grid-fade {
+      background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 700px 400px at 50% 50%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(ellipse 700px 400px at 50% 50%, black 30%, transparent 80%);
+    }
+  </style>
+</head>
+<body class="font-sans text-text1 antialiased">
+  <!-- Nav -->
+  <nav class="sticky top-0 z-30 backdrop-blur-md bg-bg/80 border-b border-border">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#" class="flex items-center gap-2.5">
+        <img src="/assets/app-icon.png" alt="Crypto Forecasts" class="w-7 h-7 rounded-md" />
+        <span class="font-semibold tracking-tight">Crypto Forecasts</span>
+        <span class="text-xs text-text3 px-1.5 py-0.5 rounded border border-border ml-1">BETA</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="#how" class="hidden sm:block text-sm text-text2 hover:text-text1 transition">How it works</a>
+        <a href="#screens" class="hidden sm:block text-sm text-text2 hover:text-text1 transition">Screens</a>
+        <span class="text-sm border border-border bg-surface2 text-text2 font-semibold px-3.5 py-1.5 rounded-md inline-flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+          Coming soon
+        </span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 grid-fade pointer-events-none"></div>
+    <div class="absolute inset-0 hero-glow pointer-events-none"></div>
+    <div class="relative max-w-6xl mx-auto px-6 pt-16 pb-20 sm:pt-24 sm:pb-32">
+      <div class="grid lg:grid-cols-12 gap-12 items-center">
+        <div class="lg:col-span-7">
+          <div class="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-text3 border border-border rounded-full px-3 py-1 mb-6">
+            <span class="w-1.5 h-1.5 rounded-full bg-up animate-pulse"></span>
+            Live on Solana Mobile
+          </div>
+          <h1 class="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.05]">
+            Read what the<br/>market<span class="text-accent"> actually</span><br/>believes.
+          </h1>
+          <p class="mt-6 text-lg sm:text-xl text-text2 max-w-xl leading-relaxed">
+            Crypto Forecasts turns live <span class="text-text1 font-medium">Kalshi prediction-market data</span> into a probability lens on six cryptos — BTC, ETH, SOL, XRP, DOGE, BNB — and lets you place calls against the consensus.
+          </p>
+          <div class="mt-8 flex flex-wrap items-center gap-3">
+            <span class="bg-surface2 border border-accent/40 text-text1 font-semibold px-5 py-3 rounded-md flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+              Coming soon to Solana dApp Store
+            </span>
+            <a href="#how" class="border border-border bg-surface text-text1 font-medium px-5 py-3 rounded-md hover:bg-surface2 transition">
+              How it works
+            </a>
+          </div>
+          <div class="mt-8 flex items-center gap-6 text-sm text-text3">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-text3"></span>
+              No custody
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-text3"></span>
+              No fees
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-1.5 rounded-full bg-text3"></span>
+              For fun, not finance
+            </div>
+          </div>
+        </div>
+        <div class="lg:col-span-5 flex justify-center lg:justify-end">
+          <div class="phone-frame max-w-[280px] w-full">
+            <img src="/assets/screen-predict.png" alt="Predict screen with price tape" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The pitch -->
+  <section class="border-y border-border bg-surface/40">
+    <div class="max-w-4xl mx-auto px-6 py-16 sm:py-20 text-center">
+      <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-6">The thesis</p>
+      <p class="text-2xl sm:text-3xl font-medium leading-snug text-text1">
+        Most crypto apps show you the <span class="text-text3 line-through">price</span>.
+        <br class="hidden sm:block"/>
+        We show you the <span class="text-accent">probability</span>.
+      </p>
+      <p class="mt-6 text-text2 leading-relaxed max-w-2xl mx-auto">
+        Charts tell you what already happened. Probability distributions — sourced live from Kalshi prediction markets — tell you what the smart money <em>actually believes will happen</em>. We render that belief as a smooth curve, then let you bet your gut against it.
+      </p>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" class="max-w-6xl mx-auto px-6 py-20 sm:py-28">
+    <div class="text-center mb-16">
+      <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-3">How it works</p>
+      <h2 class="text-3xl sm:text-5xl font-bold tracking-tight">Three taps. One call.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="bg-surface border border-border rounded-xl p-6">
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <span class="text-accent text-lg font-bold">1</span>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">See the curve</h3>
+        <p class="text-text2 leading-relaxed">
+          Live probability distributions for six cryptos — year-end for BTC/ETH/SOL, monthly highs/lows for XRP/DOGE/BNB — aggregated from Kalshi market brackets. The taller the curve, the stronger the market's belief at that price.
+        </p>
+      </div>
+      <div class="bg-surface border border-border rounded-xl p-6">
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <span class="text-accent text-lg font-bold">2</span>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Make your call</h3>
+        <p class="text-text2 leading-relaxed">
+          Drag the price tape to set any target. The app snaps to the matching bracket, surfaces the market's probability, and locks in your above-or-below prediction.
+        </p>
+      </div>
+      <div class="bg-surface border border-border rounded-xl p-6">
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <span class="text-accent text-lg font-bold">3</span>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Track the market</h3>
+        <p class="text-text2 leading-relaxed">
+          Each call is continuously scored against the live consensus and current spot. Push alerts when brackets shift. A 90-day forecast-vs-spot history shows how sharp the market actually is.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screens -->
+  <section id="screens" class="border-y border-border bg-surface/30">
+    <div class="max-w-6xl mx-auto px-6 py-20 sm:py-28">
+      <div class="text-center mb-14">
+        <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-3">Screens</p>
+        <h2 class="text-3xl sm:text-5xl font-bold tracking-tight">Built mobile-first.</h2>
+        <p class="mt-4 text-text2 max-w-xl mx-auto">Designed for Seeker-class hardware. Dark by default, Inter throughout, every screen carved down to the essentials.</p>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8">
+        <div class="space-y-3">
+          <div class="phone-frame">
+            <img src="/assets/screen-markets.png" alt="Markets feed" />
+          </div>
+          <p class="text-center text-sm text-text2">Markets feed — live probability curves for BTC, ETH, SOL</p>
+        </div>
+        <div class="space-y-3">
+          <div class="phone-frame">
+            <img src="/assets/screen-detail.png" alt="Market detail with forecast history" />
+          </div>
+          <p class="text-center text-sm text-text2">Drill-in — most-likely bracket + 90-day forecast history</p>
+        </div>
+        <div class="space-y-3">
+          <div class="phone-frame">
+            <img src="/assets/screen-track.png" alt="Track record" />
+          </div>
+          <p class="text-center text-sm text-text2">Track — forecast vs actual spot, scored daily</p>
+        </div>
+        <div class="space-y-3">
+          <div class="phone-frame">
+            <img src="/assets/screen-locked.png" alt="Lock-in feedback" />
+          </div>
+          <p class="text-center text-sm text-text2">Predict — scroll-tape input, instant lock-in</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech stack -->
+  <section class="max-w-6xl mx-auto px-6 py-20 sm:py-28">
+    <div class="text-center mb-12">
+      <p class="text-xs uppercase tracking-[0.2em] text-text3 mb-3">Built with</p>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight">Lean stack, sharp execution.</h2>
+    </div>
+    <div class="flex flex-wrap justify-center gap-3 max-w-3xl mx-auto">
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">React Native + Expo</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">React Native Paper</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">react-native-svg</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">TanStack Query</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">Solana Mobile Wallet Adapter</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">Kalshi API</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">CoinGecko</span>
+      <span class="bg-surface border border-border rounded-full px-4 py-2 text-sm">Expo Notifications</span>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="border-t border-border bg-gradient-to-b from-surface/40 to-bg">
+    <div class="max-w-3xl mx-auto px-6 py-20 sm:py-28 text-center">
+      <h2 class="text-4xl sm:text-5xl font-bold tracking-tight">Coming to the Solana dApp&nbsp;Store.</h2>
+      <p class="mt-5 text-lg text-text2 leading-relaxed">
+        Crypto Forecasts is being prepped for distribution on the Solana Mobile dApp Store, the on-device store on Seeker. One-tap install, no sideloading required.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <span class="bg-surface2 border border-accent/40 text-text1 font-semibold px-6 py-3.5 rounded-md flex items-center gap-2.5">
+          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+          Coming soon
+        </span>
+      </div>
+      <p class="mt-6 text-xs text-text3">Want early access? Reach out — we'll send you a build.</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-border">
+    <div class="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2.5">
+        <img src="/assets/app-icon.png" alt="" class="w-6 h-6 rounded" />
+        <span class="text-sm text-text2">Crypto Forecasts · A calibration game, not a trading product.</span>
+      </div>
+      <p class="text-xs text-text3">Data: Kalshi · CoinGecko. Informational only.</p>
+    </div>
+  </footer>
+</body>
+</html>
