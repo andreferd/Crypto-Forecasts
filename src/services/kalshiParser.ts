@@ -110,7 +110,10 @@ export function buildForecastSeries(
               : 0;
       weightedSum += mid * (b.probability / 100);
     }
-    expectedValue = Math.round(weightedSum / (totalProb / 100));
+    const raw = weightedSum / (totalProb / 100);
+    // Preserve precision for sub-dollar tokens (DOGE, etc.); round to integer
+    // for tokens priced ≥$1 since fractional cents are meaningless there.
+    expectedValue = raw >= 1 ? Math.round(raw) : Number(raw.toFixed(4));
   }
 
   return {
