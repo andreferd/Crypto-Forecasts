@@ -5,7 +5,7 @@
 A Solana Mobile app that turns live Kalshi prediction-market trades into a probability lens on six cryptos — BTC, ETH, SOL, XRP, DOGE, BNB.
 
 **Live website**: https://crypto-forecasts.vercel.app/
-**Solana dApp Store**: submitted, in review
+**Solana dApp Store**: https://seekertracker.com/apps?app=com.cryptoforecasts.app
 
 ---
 
