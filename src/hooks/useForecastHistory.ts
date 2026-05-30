@@ -7,7 +7,9 @@ export function useForecastHistory(seriesTicker: string | undefined, daysBack = 
     queryFn: () => fetchForecastHistory(seriesTicker!, daysBack),
     enabled: !!seriesTicker,
     staleTime: 5 * 60_000, // 5 min cache
-    refetchInterval: 10 * 60_000, // 10 min refresh (heavy call)
+    // Daily-granularity history barely changes intraday and the fetch is
+    // heavy — refresh every 30 min instead of 10.
+    refetchInterval: 30 * 60_000,
     retry: 1,
   });
 }

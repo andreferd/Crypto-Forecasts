@@ -17,7 +17,10 @@ export function useForecast(symbol: string): CryptoForecast {
       queryKey: ['kalshi-markets', t.seriesTicker],
       queryFn: () => fetchMarketsBySeries(t.seriesTicker),
       staleTime: 60_000,
-      refetchInterval: 120_000,
+      // Year-end consensus moves slowly and these markets queries fan out
+      // (~14 across the catalog, kept alive app-wide by the alert/digest/drift
+      // monitors). Poll every 5 min, not 2 — pull-to-refresh covers the rest.
+      refetchInterval: 300_000,
       retry: 2,
     })),
   });

@@ -6,7 +6,9 @@ export function useSpotPrices() {
     queryKey: ['spot-prices'],
     queryFn: fetchSpotPrices,
     staleTime: 60_000, // 60s stale time
-    refetchInterval: 60_000,
+    // The "now" price is context for a year-end forecast, not a trading
+    // ticker — 2 min is plenty and eases CoinGecko's free-tier rate limit.
+    refetchInterval: 120_000,
     retry: 2,
   });
 }
