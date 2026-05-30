@@ -8,6 +8,7 @@ import { ForecastType } from '../constants/kalshi';
 import { CryptoForecast } from '../types/market';
 import { computeConfidence, computeTrend } from '../utils/marketAnalytics';
 import { ForecastPoint } from '../services/forecastHistory';
+import { formatPriceShort } from '../utils/format';
 import { DistributionCurve } from './DistributionCurve';
 
 const TYPE_LABELS: Record<ForecastType, { pill: string; arrow: string }> = {
@@ -24,15 +25,6 @@ interface Props {
   spotPrice?: number | null;
   /** Called with the card's symbol — keep the handler stable so React.memo holds. */
   onPress: (symbol: string) => void;
-}
-
-function formatPrice(v: number | null | undefined): string {
-  if (v == null) return '—';
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
-  if (v >= 1) return `$${Math.round(v)}`;
-  if (v >= 0.01) return `$${v.toFixed(2)}`;
-  return `$${v.toFixed(4)}`;
 }
 
 function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
@@ -127,11 +119,20 @@ function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
     <View style={styles.card}>
       <Pressable
         onPress={handlePress}
+        accessibilityRole="button"
+        accessibilityLabel={`${forecast.symbol}, ${labels.arrow} consensus ${formatPriceShort(active.expectedValue)}`}
+        accessibilityHint="Opens details and lets you place a call"
         style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
       >
         <View style={styles.headerRow}>
           <View style={[styles.glyph, { borderColor: brandColor + '66' }]}>
-            <Text style={[styles.glyphText, { color: brandColor }]}>{token?.icon ?? '?'}</Text>
+            <Text
+              style={[styles.glyphText, { color: brandColor }]}
+              accessibilityElementsHidden
+              importantForAccessibility="no"
+            >
+              {token?.icon ?? '?'}
+            </Text>
           </View>
           <View style={styles.headerMid}>
             <View style={styles.symbolRow}>
@@ -140,15 +141,20 @@ function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
             </View>
             <Text style={styles.spotLine}>
               <Text style={styles.spotLabel}>now </Text>
-              <Text style={styles.spotValue}>{formatPrice(spotPrice)}</Text>
+              <Text style={styles.spotValue}>{formatPriceShort(spotPrice)}</Text>
               <Text style={styles.spotLabel}>  →  {labels.arrow}  </Text>
               <Text style={[styles.forecastValue, { color: brandColor }]}>
-                {formatPrice(active.expectedValue)}
+                {formatPriceShort(active.expectedValue)}
               </Text>
             </Text>
           </View>
           {trend && (
-            <Text style={[styles.trend, { color: trendColor }]}>
+            <Text
+              style={[styles.trend, { color: trendColor }]}
+              accessibilityLabel={`Consensus ${
+                trend.direction === 'up' ? 'up' : trend.direction === 'down' ? 'down' : 'flat'
+              } ${Math.abs(trend.changePercent).toFixed(1)} percent`}
+            >
               {trendArrow} {trend.changePercent >= 0 ? '+' : ''}{trend.changePercent.toFixed(1)}%
             </Text>
           )}
@@ -165,6 +171,9 @@ function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
                   key={t}
                   onPress={() => handlePickType(t)}
                   hitSlop={10}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
+                  accessibilityLabel={`Show ${TYPE_LABELS[t].arrow}`}
                   style={({ pressed }) => [
                     styles.pill,
                     isActive && { borderColor: brandColor + '88', backgroundColor: brandColor + '14' },
@@ -187,6 +196,8 @@ function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
 
       <Pressable
         onPress={handlePress}
+        accessibilityRole="button"
+        accessibilityLabel={`${forecast.symbol} probability distribution — ${best.probability}% chance of ${best.displayRange}. Open details.`}
         style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
       >
         <View style={styles.curveWrap}>

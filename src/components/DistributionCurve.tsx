@@ -4,6 +4,7 @@ import { Text } from 'react-native-paper';
 import Svg, { Path, Defs, LinearGradient, Stop, Line } from 'react-native-svg';
 import { colors, typography } from '../theme';
 import { PriceBracket } from '../types/market';
+import { formatPriceShort } from '../utils/format';
 
 interface Props {
   brackets: PriceBracket[];
@@ -14,14 +15,6 @@ interface Props {
   spotPrice?: number | null;
   /** Show min/max price labels on x-axis. */
   showAxis?: boolean;
-}
-
-function formatPriceShort(v: number): string {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1000) return `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
-  if (v >= 1) return `$${Math.round(v)}`;
-  if (v >= 0.01) return `$${v.toFixed(2)}`;
-  return `$${v.toFixed(4)}`;
 }
 
 /**
@@ -77,7 +70,10 @@ export function DistributionCurve({
     const startX = points[0].x;
     const endX = points[points.length - 1].x;
 
-    let path = `M ${startX} ${baseY} L ${startX} ${points[0].y}`;
+    // Catmull-Rom-ish bezier segments through the midpoints. Built once and
+    // reused for both the stroke (curve only) and the filled area (curve
+    // closed down to the baseline).
+    let segments = '';
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i - 1] ?? points[i];
       const p1 = points[i];
@@ -87,23 +83,11 @@ export function DistributionCurve({
       const cp1y = p1.y + (p2.y - p0.y) / 6;
       const cp2x = p2.x - (p3.x - p1.x) / 6;
       const cp2y = p2.y - (p3.y - p1.y) / 6;
-      path += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+      segments += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
     }
-    path += ` L ${endX} ${baseY} Z`;
 
-    // Stroke path (curve only, no fill close)
-    let strokePath = `M ${points[0].x} ${points[0].y}`;
-    for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i - 1] ?? points[i];
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      const p3 = points[i + 2] ?? p2;
-      const cp1x = p1.x + (p2.x - p0.x) / 6;
-      const cp1y = p1.y + (p2.y - p0.y) / 6;
-      const cp2x = p2.x - (p3.x - p1.x) / 6;
-      const cp2y = p2.y - (p3.y - p1.y) / 6;
-      strokePath += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
-    }
+    const strokePath = `M ${points[0].x} ${points[0].y}${segments}`;
+    const path = `M ${startX} ${baseY} L ${startX} ${points[0].y}${segments} L ${endX} ${baseY} Z`;
 
     const spotX =
       spotPrice != null && spotPrice >= xMin && spotPrice <= xMax ? px(spotPrice) : null;
