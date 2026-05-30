@@ -54,6 +54,7 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
   const [symbol, setSymbol] = useState(initialSymbol ?? 'BTC');
   const [target, setTarget] = useState<number | null>(null);
   const [direction, setDirection] = useState<'above' | 'below'>('above');
+  const [submitting, setSubmitting] = useState(false);
 
   const forecast = useForecast(symbol);
   const eoy = forecast.forecasts.find((f) => f.type === 'eoy');
@@ -99,8 +100,11 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
   }, [brackets, target]);
 
   const handleSubmit = () => {
-    if (target == null) return;
+    if (target == null || submitting) return;
+    setSubmitting(true);
     onSubmit(symbol, target, direction);
+    // Brief lock-out so a double-tap can't register two identical calls.
+    setTimeout(() => setSubmitting(false), 1500);
   };
 
   const brandColor = TOKENS[symbol]?.color ?? colors.accent;
@@ -211,8 +215,13 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
             </View>
           )}
 
-          <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.85}>
-            <Text style={styles.submitText}>Lock in</Text>
+          <TouchableOpacity
+            style={[styles.submitBtn, submitting && styles.submitBtnDisabled]}
+            onPress={handleSubmit}
+            disabled={submitting}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.submitText}>{submitting ? 'Locked in ✓' : 'Lock in'}</Text>
           </TouchableOpacity>
 
           <Text style={styles.disclaimer}>
@@ -386,6 +395,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     alignItems: 'center',
     marginTop: spacing.xs,
+  },
+  submitBtnDisabled: {
+    opacity: 0.55,
   },
   submitText: {
     ...typography.bodyLg,

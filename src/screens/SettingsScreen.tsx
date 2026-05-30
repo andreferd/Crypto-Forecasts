@@ -11,6 +11,7 @@ import { useAlertSettings } from '../hooks/useAlertSettings';
 import { useOnboarding } from '../hooks/useOnboarding';
 import { OnboardingChoice } from '../services/storageService';
 import { ConnectWalletButton } from '../components/ConnectWalletButton';
+import { ALL_TIP_KEYS } from '../components/EducationalTooltip';
 
 const EDU_TOOLTIP_KEY = '@crypto_forecasts_edu_seen';
 
@@ -45,6 +46,23 @@ export function SettingsScreen() {
       setNotifStatus((res.status as any) ?? 'unknown');
     });
   }, []);
+
+  const handleShowTips = () => {
+    Alert.alert(
+      'Show tips again?',
+      'The intro tips on Markets, Predict, and Track will reappear the next time you open each tab.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Show tips',
+          onPress: async () => {
+            await AsyncStorage.multiRemove(ALL_TIP_KEYS);
+            Alert.alert('Done', 'Tips will reappear as you open each tab.');
+          },
+        },
+      ],
+    );
+  };
 
   const handleClearData = () => {
     Alert.alert(
@@ -183,6 +201,13 @@ export function SettingsScreen() {
             <Icon source="chevron-right" size={18} color={colors.accent} />
           </TouchableOpacity>
         )}
+      </Section>
+
+      <Section title="Help">
+        <TouchableOpacity style={styles.helpRow} onPress={handleShowTips} activeOpacity={0.7}>
+          <Icon source="lightbulb-on-outline" size={18} color={colors.accent} />
+          <Text style={styles.helpText}>Show intro tips again</Text>
+        </TouchableOpacity>
       </Section>
 
       <Section title="Data">
@@ -326,6 +351,17 @@ const styles = StyleSheet.create({
   dangerText: {
     ...typography.bodyStrong,
     color: colors.down,
+  },
+  helpRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+  },
+  helpText: {
+    ...typography.bodyStrong,
+    color: colors.accent,
   },
   choiceRow: {
     flexDirection: 'row',

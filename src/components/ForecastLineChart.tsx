@@ -85,13 +85,18 @@ export function ForecastLineChart({
     [data, drawWidth],
   );
 
+  // Keep the latest getIndexFromX in a ref so the PanResponder can be created
+  // once (empty deps) and never dropped mid-gesture when `data` refreshes.
+  const getIndexFromXRef = useRef(getIndexFromX);
+  getIndexFromXRef.current = getIndexFromX;
+
   const panResponder = useMemo(
     () =>
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
         onPanResponderGrant: (evt) => {
-          const idx = getIndexFromX(evt.nativeEvent.locationX);
+          const idx = getIndexFromXRef.current(evt.nativeEvent.locationX);
           if (idx !== prevActiveIndex.current) {
             Vibration.vibrate(1);
             prevActiveIndex.current = idx;
@@ -99,7 +104,7 @@ export function ForecastLineChart({
           setActiveIndex(idx);
         },
         onPanResponderMove: (evt) => {
-          const idx = getIndexFromX(evt.nativeEvent.locationX);
+          const idx = getIndexFromXRef.current(evt.nativeEvent.locationX);
           if (idx !== prevActiveIndex.current) {
             Vibration.vibrate(1);
             prevActiveIndex.current = idx;
@@ -111,7 +116,7 @@ export function ForecastLineChart({
           setTimeout(() => setActiveIndex(null), 2000);
         },
       }),
-    [getIndexFromX],
+    [],
   );
 
   const onLayout = (e: LayoutChangeEvent) => {

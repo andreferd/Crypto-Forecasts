@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useQueryClient } from '@tanstack/react-query';
 import { colors, spacing, typography } from '../theme';
 import { TrackRecordChart } from '../components/TrackRecordChart';
+import { TipBanner, TRACK_TIP_KEY } from '../components/EducationalTooltip';
 import { EOY_SYMBOLS } from '../constants/kalshi';
 
 // Track shows forecast-vs-spot history against the year-end series; tokens
@@ -39,12 +40,18 @@ export function AccuracyTrackerScreen() {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.title}>Track record</Text>
+        <Text style={styles.title}>Market accuracy</Text>
         <Text style={styles.subtitle}>
           Year-end consensus vs. actual spot price over the past 90 days. Closer
           lines = sharper market.
         </Text>
       </View>
+
+      <TipBanner
+        storageKey={TRACK_TIP_KEY}
+        title="What this tracks"
+        body="These charts show how well the market has forecast prices — its year-end consensus against the actual spot price over 90 days. Closer lines mean a sharper market. This is the market's record, not your prediction history."
+      />
 
       {SYMBOLS.map((s) => (
         <TrackRecordChart key={s} symbol={s} days={90} />

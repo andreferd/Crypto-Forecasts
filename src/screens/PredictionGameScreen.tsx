@@ -6,6 +6,7 @@ import { colors, spacing, radii, typography } from '../theme';
 import { usePredictions } from '../hooks/usePredictions';
 import { NewPredictionForm } from '../components/NewPredictionForm';
 import { PredictionCard } from '../components/PredictionCard';
+import { TipBanner, PREDICT_TIP_KEY } from '../components/EducationalTooltip';
 import { computeDailyStreak } from '../utils/streak';
 
 function formatLockedPrice(v: number): string {
@@ -17,14 +18,22 @@ function formatLockedPrice(v: number): string {
 export function PredictionGameScreen() {
   const insets = useSafeAreaInsets();
   const { evaluations, loaded, makePrediction, deletePrediction } = usePredictions();
-  const [lockedToast, setLockedToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   const handleSubmit = useCallback(
     (symbol: string, targetPrice: number, direction: 'above' | 'below') => {
       makePrediction(symbol, targetPrice, direction);
-      setLockedToast(`Locked in: ${symbol} ${direction} ${formatLockedPrice(targetPrice)}`);
+      setToast(`Locked in: ${symbol} ${direction} ${formatLockedPrice(targetPrice)}`);
     },
     [makePrediction],
+  );
+
+  const handleDelete = useCallback(
+    (id: string) => {
+      deletePrediction(id);
+      setToast('Prediction removed');
+    },
+    [deletePrediction],
   );
 
   const sortedEvals = useMemo(
@@ -68,6 +77,12 @@ export function PredictionGameScreen() {
     >
       <Text style={styles.title}>Call it</Text>
 
+      <TipBanner
+        storageKey={PREDICT_TIP_KEY}
+        title="Make your first call"
+        body="Scroll the price tape to set an end-of-year target, choose above or below, then lock it in. Calls are scored against the live market — no money at stake, stored only on your device."
+      />
+
       {stats.total > 0 && (
         <View style={styles.scoreRow}>
           <Stat
@@ -89,7 +104,7 @@ export function PredictionGameScreen() {
             <PredictionCard
               key={ev.prediction.id}
               evaluation={ev}
-              onDelete={deletePrediction}
+              onDelete={handleDelete}
             />
           ))}
         </View>
@@ -112,14 +127,14 @@ export function PredictionGameScreen() {
       )}
     </ScrollView>
     <Snackbar
-      visible={lockedToast != null}
-      onDismiss={() => setLockedToast(null)}
+      visible={toast != null}
+      onDismiss={() => setToast(null)}
       duration={2400}
       style={styles.snackbar}
       wrapperStyle={{ bottom: 96 + insets.bottom }}
       theme={{ colors: { inverseOnSurface: colors.text1, onSurface: colors.text1 } }}
     >
-      <Text style={styles.snackbarText}>{lockedToast ?? ''}</Text>
+      <Text style={styles.snackbarText}>{toast ?? ''}</Text>
     </Snackbar>
     </View>
   );

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,59 +15,9 @@ import { EducationalTooltip } from '../components/EducationalTooltip';
 import { useAllForecasts } from '../hooks/useAllForecasts';
 import { useAllForecastHistories } from '../hooks/useAllForecastHistories';
 import { useSpotPrices } from '../hooks/useSpotPrices';
-import { computeTrend, computeConfidence } from '../utils/marketAnalytics';
-import { CryptoForecast } from '../types/market';
 import { ForecastPoint } from '../services/forecastHistory';
 
 type Props = NativeStackScreenProps<MarketsStackParamList, 'Dashboard'>;
-
-function buildHeadline(
-  forecasts: CryptoForecast[],
-  histories: (ForecastPoint[] | undefined)[],
-): { title: string; subtitle: string } {
-  const parts = forecasts
-    .map((f, i) => {
-      const eoy = f.forecasts.find((s) => s.type === 'eoy');
-      const best = eoy?.mostLikelyBracket;
-      const history = histories[i];
-      const trend = history ? computeTrend(history) : null;
-      const confidence = eoy ? computeConfidence(eoy.brackets) : 0;
-      return { symbol: f.symbol, best, trend, confidence };
-    })
-    .filter((p) => p.best);
-
-  if (parts.length === 0) {
-    return {
-      title: 'Markets are warming up',
-      subtitle: 'Market consensus will land shortly.',
-    };
-  }
-
-  const biggestMover = parts
-    .filter((p) => p.trend && Math.abs(p.trend.changePercent) >= 3)
-    .sort((a, b) => Math.abs(b.trend!.changePercent) - Math.abs(a.trend!.changePercent))[0];
-
-  if (biggestMover) {
-    const dir = biggestMover.trend!.changePercent > 0 ? 'rising' : 'slipping';
-    return {
-      title: `${biggestMover.symbol} is ${dir} this week`,
-      subtitle: `${Math.abs(biggestMover.trend!.changePercent).toFixed(1)}% shift in the year-end consensus.`,
-    };
-  }
-
-  const mostConvinced = [...parts].sort((a, b) => b.confidence - a.confidence)[0];
-  if (mostConvinced.confidence >= 40) {
-    return {
-      title: `Tight consensus on ${mostConvinced.symbol}`,
-      subtitle: `${mostConvinced.best!.probability}% on ${mostConvinced.best!.displayRange} by year-end.`,
-    };
-  }
-
-  return {
-    title: 'Markets are split',
-    subtitle: 'No single range dominates — watch the full distribution below.',
-  };
-}
 
 export function DashboardScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
@@ -81,7 +31,11 @@ export function DashboardScreen({ navigation }: Props) {
     (s) => historyMap[s],
   );
 
-  const headline = useMemo(() => buildHeadline(forecasts, histories), [forecasts, histories]);
+  // Stable handler so React.memo'd SymbolCards don't re-render on every tick.
+  const handlePressSymbol = useCallback(
+    (symbol: string) => navigation.navigate('CryptoDetail', { symbol }),
+    [navigation],
+  );
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = React.useState(false);
@@ -118,9 +72,7 @@ export function DashboardScreen({ navigation }: Props) {
               forecast={forecast}
               history={histories[i] ?? undefined}
               spotPrice={spotPrices?.[forecast.symbol] ?? null}
-              onPress={() =>
-                navigation.navigate('CryptoDetail', { symbol: forecast.symbol })
-              }
+              onPress={handlePressSymbol}
             />
           ))}
         </View>

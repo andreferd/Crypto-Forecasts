@@ -34,7 +34,7 @@ function formatDate(ts: number): string {
  * Forecast (Kalshi consensus EV) vs spot price (CoinGecko) over time.
  * Uses live data sources, not the daily local log — works from first launch.
  */
-export function TrackRecordChart({ symbol, days = 90 }: Props) {
+function TrackRecordChartBase({ symbol, days = 90 }: Props) {
   const [width, setWidth] = useState(280);
 
   const tickers = CRYPTO_TICKERS[symbol] ?? [];
@@ -271,6 +271,8 @@ function LegendDot({ color, label, dashed }: { color: string; label: string; das
     </View>
   );
 }
+
+export const TrackRecordChart = React.memo(TrackRecordChartBase);
 
 const styles = StyleSheet.create({
   container: {

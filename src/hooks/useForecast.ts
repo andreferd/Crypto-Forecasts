@@ -38,5 +38,11 @@ export function useForecast(symbol: string): CryptoForecast {
   const isLoading = queries.some((q) => q.isLoading);
   const isError = queries.some((q) => q.isError);
 
-  return { symbol, forecasts, isLoading, isError };
+  // Memoize the return object so consumers (and React.memo'd cards) see a
+  // stable reference when nothing has actually changed. `forecasts` is already
+  // memoized above; isLoading/isError are primitives.
+  return useMemo(
+    () => ({ symbol, forecasts, isLoading, isError }),
+    [symbol, forecasts, isLoading, isError],
+  );
 }

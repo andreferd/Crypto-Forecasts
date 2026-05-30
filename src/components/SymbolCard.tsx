@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Pressable, LayoutChangeEvent } from 'react-native';
+import { View, StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { confidenceColor, confidenceLabel } from '../theme/semantics';
@@ -22,7 +22,8 @@ interface Props {
   forecast: CryptoForecast;
   history?: ForecastPoint[];
   spotPrice?: number | null;
-  onPress: () => void;
+  /** Called with the card's symbol — keep the handler stable so React.memo holds. */
+  onPress: (symbol: string) => void;
 }
 
 function formatPrice(v: number | null | undefined): string {
@@ -34,8 +35,11 @@ function formatPrice(v: number | null | undefined): string {
   return `$${v.toFixed(4)}`;
 }
 
-export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
-  const [width, setWidth] = useState(320);
+function SymbolCardBase({ forecast, history, spotPrice, onPress }: Props) {
+  // Cards are full-width single-column: window width minus the Dashboard
+  // content padding (spacing.lg * 2) and the card's own padding (spacing.lg * 2).
+  const { width: windowWidth } = useWindowDimensions();
+  const curveWidth = windowWidth - spacing.lg * 4;
   const [selectedType, setSelectedType] = useState<ForecastType>('eoy');
   const [userPicked, setUserPicked] = useState(false);
   const token = TOKENS[forecast.symbol];
@@ -66,6 +70,8 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
     setSelectedType(t);
   };
 
+  const handlePress = () => onPress(forecast.symbol);
+
   const active =
     forecast.forecasts.find((f) => f.type === selectedType) ??
     forecast.forecasts.find((f) => f.type === availableTypes[0]);
@@ -76,8 +82,6 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
     [active],
   );
   const trend = useMemo(() => (history ? computeTrend(history) : null), [history]);
-
-  const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
 
   if (forecast.isLoading) {
     return (
@@ -120,9 +124,9 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
   const confColor = confidenceColor(confidence);
 
   return (
-    <View style={styles.card} onLayout={onLayout}>
+    <View style={styles.card}>
       <Pressable
-        onPress={onPress}
+        onPress={handlePress}
         style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
       >
         <View style={styles.headerRow}>
@@ -182,7 +186,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
       </View>
 
       <Pressable
-        onPress={onPress}
+        onPress={handlePress}
         style={({ pressed }) => [styles.zone, pressed && { opacity: 0.85 }]}
       >
         <View style={styles.curveWrap}>
@@ -191,7 +195,7 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
             accentColor={brandColor}
             spotPrice={active.type === 'eoy' ? (spotPrice ?? null) : null}
             height={104}
-            width={width - spacing.lg * 2}
+            width={curveWidth}
           />
         </View>
 
@@ -201,7 +205,10 @@ export function SymbolCard({ forecast, history, spotPrice, onPress }: Props) {
             <Text style={styles.footerLabel}>  chance of  </Text>
             <Text style={styles.footerEm}>{best.displayRange}</Text>
           </Text>
-          <Icon source="chevron-right" size={18} color={colors.text3} />
+          <View style={styles.detailHint}>
+            <Text style={styles.detailHintText}>Details</Text>
+            <Icon source="chevron-right" size={18} color={colors.text3} />
+          </View>
         </View>
       </Pressable>
     </View>
@@ -233,6 +240,8 @@ function PlaceholderHeader({
     </View>
   );
 }
+
+export const SymbolCard = React.memo(SymbolCardBase);
 
 const styles = StyleSheet.create({
   card: {
@@ -321,6 +330,15 @@ const styles = StyleSheet.create({
   },
   footerLabel: {
     color: colors.text3,
+  },
+  detailHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  detailHintText: {
+    ...typography.microStrong,
+    fontFamily: typography.caption.fontFamily,
+    color: colors.text2,
   },
   footerEm: {
     ...typography.bodySmStrong,

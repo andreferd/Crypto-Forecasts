@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Text, Icon } from 'react-native-paper';
 import { colors, spacing, radii, typography } from '../theme';
 import { TOKENS } from '../constants/tokens';
@@ -30,10 +30,25 @@ const agreementConfig = {
   neutral: { label: 'Neutral', color: colors.text3, icon: 'minus-circle' as const },
 };
 
-export function PredictionCard({ evaluation, onDelete }: Props) {
+function PredictionCardBase({ evaluation, onDelete }: Props) {
   const { prediction, currentMarketProb, marketAgreement, hypotheticalResult } = evaluation;
   const token = TOKENS[prediction.symbol];
   const agreement = agreementConfig[marketAgreement];
+
+  const confirmDelete = () => {
+    Alert.alert(
+      'Delete this call?',
+      `${prediction.symbol} ${prediction.direction} ${formatPrice(prediction.targetPrice)} will be permanently removed. This can't be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => onDelete(prediction.id),
+        },
+      ],
+    );
+  };
 
   return (
     <View style={styles.card}>
@@ -50,8 +65,8 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
           </Text>
         </View>
         <TouchableOpacity
-          onPress={() => onDelete(prediction.id)}
-          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          onPress={confirmDelete}
+          hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
           accessibilityRole="button"
           accessibilityLabel={`Delete prediction: ${prediction.symbol} ${prediction.direction} ${formatPrice(prediction.targetPrice)}`}
         >
@@ -94,6 +109,8 @@ export function PredictionCard({ evaluation, onDelete }: Props) {
     </View>
   );
 }
+
+export const PredictionCard = React.memo(PredictionCardBase);
 
 const styles = StyleSheet.create({
   card: {

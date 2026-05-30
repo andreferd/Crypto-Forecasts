@@ -4,56 +4,74 @@ import { Text, Icon } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, spacing, radii, typography } from '../theme';
 
-const STORAGE_KEY = '@crypto_forecasts_edu_seen';
+// Markets explainer key — also toggled by the Settings experience picker
+// and OnboardingScreen, so it must stay stable.
+const MARKETS_KEY = '@crypto_forecasts_edu_seen';
+export const PREDICT_TIP_KEY = '@crypto_forecasts_predict_tip_seen';
+export const TRACK_TIP_KEY = '@crypto_forecasts_track_tip_seen';
 
-export function EducationalTooltip() {
+/** All first-run tip keys — used by Settings "Show tips again". */
+export const ALL_TIP_KEYS = [MARKETS_KEY, PREDICT_TIP_KEY, TRACK_TIP_KEY];
+
+interface TipBannerProps {
+  storageKey: string;
+  title: string;
+  /** Banner body — pass a string or styled <Text> spans. */
+  body: React.ReactNode;
+  icon?: string;
+}
+
+/**
+ * One-time dismissible tip banner. Reads its `storageKey` from AsyncStorage
+ * on mount; renders only if unseen. Animations run on the native driver
+ * (opacity + translateY) so they stay smooth under JS-thread load.
+ */
+export function TipBanner({
+  storageKey,
+  title,
+  body,
+  icon = 'lightbulb-on-outline',
+}: TipBannerProps) {
   const [visible, setVisible] = useState(false);
-  const height = useRef(new Animated.Value(0)).current;
   const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(-8)).current;
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((val) => {
-      if (!val) {
-        setVisible(true);
-        Animated.parallel([
-          Animated.timing(height, { toValue: 1, duration: 300, useNativeDriver: false }),
-          Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: false }),
-        ]).start();
-      }
+    let cancelled = false;
+    AsyncStorage.getItem(storageKey).then((val) => {
+      if (cancelled || val) return;
+      setVisible(true);
+      Animated.parallel([
+        Animated.timing(opacity, { toValue: 1, duration: 280, useNativeDriver: true }),
+        Animated.timing(translateY, { toValue: 0, duration: 280, useNativeDriver: true }),
+      ]).start();
     });
-  }, [height, opacity]);
+    return () => {
+      cancelled = true;
+    };
+  }, [storageKey, opacity, translateY]);
 
   const dismiss = () => {
     Animated.parallel([
-      Animated.timing(height, { toValue: 0, duration: 220, useNativeDriver: false }),
-      Animated.timing(opacity, { toValue: 0, duration: 220, useNativeDriver: false }),
+      Animated.timing(opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(translateY, { toValue: -8, duration: 200, useNativeDriver: true }),
     ]).start(() => {
       setVisible(false);
-      AsyncStorage.setItem(STORAGE_KEY, '1');
+      AsyncStorage.setItem(storageKey, '1');
     });
   };
 
   if (!visible) return null;
 
   return (
-    <Animated.View
-      style={[
-        styles.banner,
-        { opacity, maxHeight: height.interpolate({ inputRange: [0, 1], outputRange: [0, 260] }) },
-      ]}
-    >
+    <Animated.View style={[styles.banner, { opacity, transform: [{ translateY }] }]}>
       <View style={styles.inner}>
         <View style={styles.iconWrap}>
-          <Icon source="lightbulb-on-outline" size={18} color={colors.accent} />
+          <Icon source={icon} size={18} color={colors.accent} />
         </View>
         <View style={styles.copy}>
-          <Text style={styles.title}>How to read this app</Text>
-          <Text style={styles.body}>
-            Each card shows a crypto's <Text style={styles.em}>probability distribution</Text>{' '}
-            for end-of-year. The dashed line is the current spot price. Higher curves
-            mean more market <Text style={styles.em}>belief</Text> on that range. Tap
-            a card to drill in or place a call.
-          </Text>
+          <Text style={styles.title}>{title}</Text>
+          <Text style={styles.body}>{body}</Text>
         </View>
         <TouchableOpacity
           onPress={dismiss}
@@ -68,9 +86,28 @@ export function EducationalTooltip() {
   );
 }
 
+/** Markets-screen explainer. Thin wrapper kept so DashboardScreen is unchanged. */
+export function EducationalTooltip() {
+  return (
+    <TipBanner
+      storageKey={MARKETS_KEY}
+      title="How to read this app"
+      body={
+        <>
+          Each card shows a crypto's{' '}
+          <Text style={styles.em}>probability distribution</Text> for end-of-year.
+          The dashed line is the current spot price. Higher curves mean more market{' '}
+          <Text style={styles.em}>belief</Text> on that range. Tap a card to drill in
+          or place a call — and open <Text style={styles.em}>Settings</Text> (top-right)
+          to get alerted when the odds shift.
+        </>
+      }
+    />
+  );
+}
+
 const styles = StyleSheet.create({
   banner: {
-    overflow: 'hidden',
     marginBottom: spacing.md,
   },
   inner: {

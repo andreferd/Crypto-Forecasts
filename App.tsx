@@ -2,7 +2,10 @@
 import './src/polyfills';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PaperProvider } from 'react-native-paper';
 import { useFonts } from 'expo-font';
 // Subpath imports skip the barrel that eagerly require()'s all 18 weights.
@@ -22,14 +25,39 @@ import { OnboardingProvider } from './src/hooks/useOnboarding';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { paperTheme } from './src/theme';
 
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 60_000,
+      // gcTime must be >= the persist maxAge below, otherwise a restored
+      // query is garbage-collected before its component mounts.
+      gcTime: ONE_DAY,
       retry: 2,
     },
   },
 });
+
+// Persist the query cache to AsyncStorage so a cold start hydrates instantly
+// from the last session instead of waiting ~3-5s on a full refetch. Live data
+// still refreshes in the background once mounted (staleTime/refetchInterval).
+const asyncStoragePersister = createAsyncStoragePersister({
+  storage: AsyncStorage,
+  key: '@crypto_forecasts_query_cache',
+  throttleTime: 2000,
+});
+
+// Only persist the heavy, slow-changing queries — those are what make a cold
+// start feel slow. Bump the buster string whenever a payload shape changes so
+// stale caches from an older app version are discarded on launch.
+const PERSISTED_QUERY_KEYS = new Set([
+  'kalshi-markets',
+  'forecast-history',
+  'spot-history',
+  'spot-prices',
+]);
+const CACHE_BUSTER = 'cp-cache-v1';
 
 export default function App() {
   // Load Inter in the background. We do NOT gate render on this —
@@ -43,7 +71,19 @@ export default function App() {
   });
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: asyncStoragePersister,
+        maxAge: ONE_DAY,
+        buster: CACHE_BUSTER,
+        dehydrateOptions: {
+          shouldDehydrateQuery: (query) =>
+            query.state.status === 'success' &&
+            PERSISTED_QUERY_KEYS.has(query.queryKey[0] as string),
+        },
+      }}
+    >
       <PaperProvider theme={paperTheme}>
         <SafeAreaProvider>
           <OnboardingProvider>
@@ -53,6 +93,6 @@ export default function App() {
           </OnboardingProvider>
         </SafeAreaProvider>
       </PaperProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }
