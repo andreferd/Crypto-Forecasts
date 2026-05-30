@@ -123,6 +123,8 @@ export function SettingsScreen() {
               style={[styles.choiceRow, idx > 0 && styles.choiceRowDivider]}
               onPress={() => handleExperienceChange(opt.value)}
               activeOpacity={0.7}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: active, checked: active }}
             >
               <View style={styles.choiceText}>
                 <Text style={styles.rowLabel}>{opt.label}</Text>
@@ -157,6 +159,9 @@ export function SettingsScreen() {
                   key={t}
                   style={[styles.pill, settings.thresholdPercent === t && styles.pillActive]}
                   onPress={() => setThreshold(t)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: settings.thresholdPercent === t }}
+                  accessibilityLabel={`Alert threshold ${t} percent`}
                 >
                   <Text
                     style={[

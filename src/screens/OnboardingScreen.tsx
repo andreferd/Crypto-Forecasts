@@ -97,13 +97,19 @@ function Choice({
   onPress: () => void;
 }) {
   return (
-    <TouchableOpacity style={styles.choice} onPress={onPress} activeOpacity={0.85}>
+    <TouchableOpacity
+      style={styles.choice}
+      onPress={onPress}
+      activeOpacity={0.85}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}. ${description}`}
+    >
       <View style={styles.choiceIcon}>{glyph}</View>
       <View style={styles.choiceText}>
         <Text style={styles.choiceLabel}>{label}</Text>
         <Text style={styles.choiceDesc}>{description}</Text>
       </View>
-      <Text style={styles.chevron}>›</Text>
+      <Text style={styles.chevron} accessibilityElementsHidden importantForAccessibility="no">›</Text>
     </TouchableOpacity>
   );
 }

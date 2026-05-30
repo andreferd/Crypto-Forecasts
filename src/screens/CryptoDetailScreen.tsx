@@ -167,6 +167,9 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
                     key={t}
                     onPress={() => setSelectedType(t)}
                     hitSlop={10}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isActive }}
+                    accessibilityLabel={`Show ${TYPE_LABELS[t].arrow}`}
                     style={({ pressed }) => [
                       styles.pill,
                       isActive && {
@@ -227,6 +230,8 @@ export function CryptoDetailScreen({ route, navigation }: Props) {
       </View>
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Make a call on ${symbol}`}
         style={({ pressed }) => [
           styles.predictButton,
           { backgroundColor: brandColor },

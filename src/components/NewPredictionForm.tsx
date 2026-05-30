@@ -132,6 +132,9 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
               ]}
               onPress={() => setSymbol(s)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              accessibilityLabel={`Predict ${token?.name ?? s}`}
             >
               <Text
                 style={[
@@ -220,6 +223,9 @@ export function NewPredictionForm({ onSubmit, initialSymbol }: Props) {
             onPress={handleSubmit}
             disabled={submitting}
             activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: submitting }}
+            accessibilityLabel={`Lock in call: ${symbol} ${direction} ${target != null ? formatPrice(target) : ''}`}
           >
             <Text style={styles.submitText}>{submitting ? 'Locked in ✓' : 'Lock in'}</Text>
           </TouchableOpacity>
@@ -247,6 +253,9 @@ function DirectionBtn({
       style={[styles.directionBtn, active && styles.directionBtnActive]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      accessibilityLabel={`Predict price ${label.toLowerCase()} target`}
     >
       <Text style={[styles.directionText, active && styles.directionTextActive]}>{label}</Text>
     </TouchableOpacity>

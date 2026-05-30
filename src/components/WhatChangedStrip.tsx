@@ -66,7 +66,12 @@ export function WhatChangedStrip({ limit = 3 }: Props) {
         <Icon source="pulse" size={16} color={colors.accent} />
         <Text style={styles.header}>Recent shifts</Text>
         {hasSignificantChanges && (
-          <TouchableOpacity onPress={markDigestSeen} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <TouchableOpacity
+            onPress={markDigestSeen}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Mark recent shifts as seen"
+          >
             <Text style={styles.dismiss}>Mark seen</Text>
           </TouchableOpacity>
         )}

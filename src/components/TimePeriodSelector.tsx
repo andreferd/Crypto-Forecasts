@@ -32,6 +32,9 @@ export function TimePeriodSelector({ selected, onSelect }: TimePeriodSelectorPro
             style={[styles.pill, active && styles.pillActive]}
             onPress={() => onSelect(p.key)}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityState={{ selected: active }}
+            accessibilityLabel={`Show ${p.days} day history`}
           >
             <Text style={[styles.label, active && styles.labelActive]}>
               {p.label}
